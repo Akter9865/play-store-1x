@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
+  Layers,
   FileText,
   Smartphone,
   Image,
@@ -51,6 +52,7 @@ export const AdminLayout: React.FC = () => {
 
   const navItems = [
     { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+    { to: '/admin/apps', label: 'App Generator (PWAs)', icon: Layers },
     { to: '/admin/content', label: 'App Information & Content', icon: FileText },
     { to: '/admin/install', label: 'Install Settings', icon: Smartphone },
     { to: '/admin/media', label: 'Media & Screenshots', icon: Image },

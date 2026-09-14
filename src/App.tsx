@@ -7,6 +7,7 @@ import { AdminLayout } from './layouts/AdminLayout';
 
 // Public Pages
 import { LandingPage } from './pages/public/LandingPage';
+import { GeneratedAppPage } from './pages/public/GeneratedAppPage';
 import { InstallGuidePage } from './pages/public/InstallGuidePage';
 import { PrivacyPolicyPage } from './pages/public/PrivacyPolicyPage';
 import { TermsPage } from './pages/public/TermsPage';
@@ -14,6 +15,7 @@ import { TermsPage } from './pages/public/TermsPage';
 // Admin Pages
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminApps } from './pages/admin/AdminApps';
 import { AdminContent } from './pages/admin/AdminContent';
 import { AdminInstall } from './pages/admin/AdminInstall';
 import { AdminMedia } from './pages/admin/AdminMedia';
@@ -46,10 +48,13 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
+        {/* Dynamic Per-App PWA Routes */}
+        <Route path="/app/:appId" element={<GeneratedAppPage />} />
+        <Route path="/app/:appId/*" element={<GeneratedAppPage />} />
+
+        {/* Public Store Routes */}
         <Route path="/" element={<PublicLayout appSettings={appSettings} />}>
           <Route index element={<LandingPage appSettings={appSettings} />} />
-          <Route path="app" element={<LandingPage appSettings={appSettings} />} />
           <Route path="install" element={<InstallGuidePage appSettings={appSettings} />} />
           <Route path="privacy" element={<PrivacyPolicyPage appSettings={appSettings} />} />
           <Route path="terms" element={<TermsPage appSettings={appSettings} />} />
@@ -61,6 +66,7 @@ export const App: React.FC = () => {
         {/* Protected Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
+          <Route path="apps" element={<AdminApps />} />
           <Route path="content" element={<AdminContent />} />
           <Route path="install" element={<AdminInstall />} />
           <Route path="media" element={<AdminMedia />} />

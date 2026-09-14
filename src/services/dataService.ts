@@ -10,6 +10,7 @@ import {
   AnalyticsEvent,
   AnalyticsSummary,
   AnalyticsEventType,
+  GeneratedApp,
 } from '../types';
 import {
   initialAppSettings,
@@ -20,6 +21,7 @@ import {
   initialDeveloperSettings,
   initialPrivacySettings,
   initialAnalyticsEvents,
+  initialGeneratedApps,
 } from './mockData';
 
 // Local storage keys for resilient offline/fallback persistence
@@ -32,6 +34,7 @@ const STORAGE_KEYS = {
   DEVELOPER_SETTINGS: 'play_dev_settings',
   PRIVACY_SETTINGS: 'play_privacy_settings',
   ANALYTICS: 'play_analytics_events',
+  GENERATED_APPS: 'play_generated_apps',
 };
 
 function getLocal<T>(key: string, defaultVal: T): T {
@@ -569,5 +572,128 @@ export async function uploadFile(
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+// ----------------------------------------------------
+// GENERATED APPS (Multi-App PWA Platform)
+// ----------------------------------------------------
+export async function getGeneratedApps(): Promise<GeneratedApp[]> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('generated_apps')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error && data && data.length > 0) return data as GeneratedApp[];
+  }
+  return getLocal<GeneratedApp[]>(STORAGE_KEYS.GENERATED_APPS, initialGeneratedApps);
+}
+
+export async function getGeneratedApp(appId: string): Promise<GeneratedApp | null> {
+  const cleanId = appId.toLowerCase().trim();
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('generated_apps')
+      .select('*')
+      .eq('app_id', cleanId)
+      .limit(1)
+      .single();
+    if (!error && data) return data as GeneratedApp;
+  }
+
+  const apps = await getGeneratedApps();
+  return apps.find((a) => a.app_id.toLowerCase() === cleanId || a.id === cleanId) || null;
+}
+
+export async function saveGeneratedApp(app: Partial<GeneratedApp>): Promise<GeneratedApp> {
+  const apps = await getGeneratedApps();
+  let result: GeneratedApp;
+
+  const now = new Date().toISOString();
+  const appIdClean = (app.app_id || app.app_name || 'app')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  if (app.id) {
+    // Update existing
+    const existing = apps.find((a) => a.id === app.id || a.app_id === app.app_id);
+    result = {
+      ...existing,
+      ...app,
+      app_id: appIdClean,
+      updated_at: now,
+    } as GeneratedApp;
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('generated_apps')
+        .update(result)
+        .eq('id', result.id);
+      if (error) console.error('Error updating generated_app:', error);
+    }
+
+    const updatedList = apps.map((a) => (a.id === result.id ? result : a));
+    setLocal(STORAGE_KEYS.GENERATED_APPS, updatedList);
+  } else {
+    // Insert new
+    result = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `app-${Date.now()}`,
+      app_id: appIdClean,
+      app_name: app.app_name || 'My Web App',
+      short_name: app.short_name || app.app_name || 'WebApp',
+      target_url: app.target_url || '',
+      apk_url: app.apk_url || '',
+      apk_filename: app.apk_filename || 'app-release.apk',
+      apk_size_bytes: app.apk_size_bytes || 0,
+      icon_url: app.icon_url || '/icon-512.png',
+      icon_192_url: app.icon_192_url || app.icon_url || '/icon-192.png',
+      icon_512_url: app.icon_512_url || app.icon_url || '/icon-512.png',
+      apple_touch_icon_url: app.apple_touch_icon_url || app.icon_url || '/apple-touch-icon.png',
+      favicon_url: app.favicon_url || app.icon_url || '/favicon.png',
+      theme_color: app.theme_color || '#01875f',
+      background_color: app.background_color || '#ffffff',
+      description: app.description || 'Modern standalone mobile & desktop application.',
+      short_description: app.short_description || 'High performance installable web app.',
+      category: app.category || 'Entertainment & Utilities',
+      rating: app.rating ?? 4.8,
+      review_count: app.review_count || '10K+ reviews',
+      download_count: app.download_count || '100K+ downloads',
+      version: app.version || '1.0.0',
+      display_mode: app.display_mode || 'standalone',
+      embed_mode: app.embed_mode || 'iframe_seamless',
+      button_text: app.button_text || 'Install',
+      created_at: now,
+      updated_at: now,
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('generated_apps')
+        .insert(result);
+      if (error) console.error('Error inserting generated_app:', error);
+    }
+
+    setLocal(STORAGE_KEYS.GENERATED_APPS, [result, ...apps]);
+  }
+
+  return result;
+}
+
+export async function deleteGeneratedApp(id: string): Promise<boolean> {
+  const apps = await getGeneratedApps();
+  const filtered = apps.filter((a) => a.id !== id && a.app_id !== id);
+  setLocal(STORAGE_KEYS.GENERATED_APPS, filtered);
+
+  if (isSupabaseConfigured && supabase) {
+    const { error } = await supabase
+      .from('generated_apps')
+      .delete()
+      .or(`id.eq.${id},app_id.eq.${id}`);
+    if (error) {
+      console.error('Error deleting generated_app:', error);
+      return false;
+    }
+  }
+  return true;
 }
 

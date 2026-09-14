@@ -168,3 +168,34 @@ export interface AnalyticsSummary {
   mediaCount: number;
   recentEvents: AnalyticsEvent[];
 }
+
+export interface GeneratedApp {
+  id: string;
+  app_id: string;
+  app_name: string;
+  short_name: string;
+  target_url?: string;
+  apk_url?: string;
+  apk_filename?: string;
+  apk_size_bytes?: number;
+  icon_url: string;
+  icon_192_url?: string;
+  icon_512_url?: string;
+  apple_touch_icon_url?: string;
+  favicon_url?: string;
+  theme_color?: string;
+  background_color?: string;
+  description?: string;
+  short_description?: string;
+  category?: string;
+  rating?: number;
+  review_count?: string;
+  download_count?: string;
+  version?: string;
+  display_mode?: 'standalone' | 'fullscreen' | 'minimal-ui';
+  embed_mode?: 'iframe_seamless' | 'direct_launch';
+  button_text?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+

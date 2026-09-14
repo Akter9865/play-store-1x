@@ -1,33 +1,62 @@
 import { useEffect } from 'react';
-import { AppSettings } from '../types';
+import { AppSettings, GeneratedApp } from '../types';
 
 /**
  * useDynamicPwa: Dynamically generates and syncs the PWA Web App Manifest,
  * apple-touch-icon, favicon, meta theme-color, and page title in real-time
- * whenever appSettings are updated in the Admin panel.
+ * for both the root store and generated per-app PWA routes (/app/{appId}/).
  */
-export function useDynamicPwa(appSettings: AppSettings | null) {
+export function useDynamicPwa(
+  config: AppSettings | GeneratedApp | null,
+  appIdOverride?: string
+) {
   useEffect(() => {
-    if (!appSettings) return;
+    if (!config) return;
 
     let createdManifestUrl: string | null = null;
 
     try {
-      const icon192 = appSettings.icon_192_url || appSettings.icon_url || '/icon-192.png';
-      const icon512 = appSettings.icon_512_url || appSettings.icon_url || '/icon-512.png';
-      const appleIcon = appSettings.apple_touch_icon_url || appSettings.icon_url || '/apple-touch-icon.png';
-      const favicon = appSettings.favicon_url || appSettings.icon_url || '/favicon.png';
+      const isGeneratedApp = 'app_id' in config;
+      const appId = appIdOverride || (isGeneratedApp ? (config as GeneratedApp).app_id : undefined);
+
+      const appName = isGeneratedApp
+        ? (config as GeneratedApp).app_name
+        : (config as AppSettings).pwa_name || (config as AppSettings).app_name;
+
+      const shortName = isGeneratedApp
+        ? (config as GeneratedApp).short_name
+        : (config as AppSettings).pwa_short_name || (config as AppSettings).app_name;
+
+      const description = config.short_description || config.description || 'Modern standalone mobile & desktop application.';
+
+      const iconUrl = config.icon_url || '/icon-512.png';
+      const icon192 = config.icon_192_url || iconUrl || '/icon-192.png';
+      const icon512 = config.icon_512_url || iconUrl || '/icon-512.png';
+      const appleIcon = config.apple_touch_icon_url || iconUrl || '/apple-touch-icon.png';
+      const favicon = config.favicon_url || iconUrl || '/favicon.png';
+
+      const themeColor =
+        ('theme_color' in config ? (config as GeneratedApp).theme_color : (config as AppSettings).pwa_theme_color) ||
+        '#01875f';
+      const backgroundColor =
+        ('background_color' in config ? (config as GeneratedApp).background_color : (config as AppSettings).pwa_background_color) ||
+        '#ffffff';
+
+      // Scoping: If appId is present, scope tightly to `/app/${appId}/`
+      const scope = appId ? `/app/${appId}/` : '/';
+      const startUrl = appId ? `/app/${appId}/?source=pwa` : '/?source=pwa';
+      const manifestId = appId ? `/app/${appId}/?source=pwa` : '/?source=pwa';
 
       const manifest = {
-        id: '/?source=pwa',
-        name: appSettings.pwa_name || appSettings.app_name || 'SuperPlay App',
-        short_name: appSettings.pwa_short_name || appSettings.app_name || 'SuperPlay',
-        description: appSettings.short_description || 'Modern entertainment and utilities application.',
-        start_url: '/?source=pwa',
-        scope: '/',
+        id: manifestId,
+        name: appName,
+        short_name: shortName,
+        description: description,
+        start_url: startUrl,
+        scope: scope,
         display: 'standalone',
-        background_color: appSettings.pwa_background_color || '#ffffff',
-        theme_color: appSettings.pwa_theme_color || '#01875f',
+        background_color: backgroundColor,
+        theme_color: themeColor,
         orientation: 'any',
         categories: ['entertainment', 'games', 'utilities'],
         icons: [
@@ -74,27 +103,33 @@ export function useDynamicPwa(appSettings: AppSettings | null) {
 
       // 2. Update <link rel="apple-touch-icon">
       let appleLink = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
-      if (appleLink) {
-        appleLink.href = appleIcon;
+      if (!appleLink) {
+        appleLink = document.createElement('link');
+        appleLink.rel = 'apple-touch-icon';
+        document.head.appendChild(appleLink);
       }
+      appleLink.href = appleIcon;
 
       // 3. Update <link rel="icon">
       let favLink = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-      if (favLink) {
-        favLink.href = favicon;
+      if (!favLink) {
+        favLink = document.createElement('link');
+        favLink.rel = 'icon';
+        document.head.appendChild(favLink);
       }
+      favLink.href = favicon;
 
       // 4. Update <meta name="theme-color">
-      const themeColor = appSettings.pwa_theme_color || '#01875f';
-      const metaTheme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-      if (metaTheme) {
-        metaTheme.content = themeColor;
+      let metaTheme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+      if (!metaTheme) {
+        metaTheme = document.createElement('meta');
+        metaTheme.name = 'theme-color';
+        document.head.appendChild(metaTheme);
       }
+      metaTheme.content = themeColor;
 
       // 5. Update document title
-      if (appSettings.app_name) {
-        document.title = `${appSettings.app_name} - Official App`;
-      }
+      document.title = `${appName} - Official App`;
     } catch (err) {
       console.warn('Failed to dynamically sync PWA manifest:', err);
     }
@@ -104,5 +139,5 @@ export function useDynamicPwa(appSettings: AppSettings | null) {
         URL.revokeObjectURL(createdManifestUrl);
       }
     };
-  }, [appSettings]);
+  }, [config, appIdOverride]);
 }
