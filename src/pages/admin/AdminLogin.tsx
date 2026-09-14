@@ -32,8 +32,8 @@ export const AdminLogin: React.FC = () => {
   };
 
   const handleFillDemo = () => {
-    setEmail('admin@example.com');
-    setPassword('admin123');
+    setEmail('max@support.com');
+    setPassword('max@123');
     setError(null);
   };
 
@@ -74,7 +74,7 @@ export const AdminLogin: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
+                placeholder="max@support.com"
                 className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-play-green focus:ring-1 focus:ring-play-green outline-none transition-all"
               />
             </div>
@@ -121,7 +121,7 @@ export const AdminLogin: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-play-green text-xs font-semibold hover:bg-emerald-100 transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Fill Demo Credentials (admin@example.com)</span>
+            <span>Fill Admin Credentials (max@support.com)</span>
           </button>
         </div>
 

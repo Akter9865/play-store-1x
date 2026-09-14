@@ -11,7 +11,7 @@ export const Footer: React.FC<FooterProps> = ({ appSettings }) => {
     <footer className="mt-12 bg-gray-50 border-t border-gray-200/80 pt-12 pb-16 text-xs text-gray-500">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Footer Link Columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-12">
           {/* Column 1: Marketplace */}
           <div>
             <h4 className="font-bold text-gray-800 text-xs uppercase tracking-wider mb-3">
@@ -94,35 +94,6 @@ export const Footer: React.FC<FooterProps> = ({ appSettings }) => {
               <li>
                 <Link to="/privacy" className="hover:text-play-green hover:underline">
                   Data Protection
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Admin & Systems */}
-          <div>
-            <h4 className="font-bold text-gray-800 text-xs uppercase tracking-wider mb-3">
-              Administration
-            </h4>
-            <ul className="space-y-2.5">
-              <li>
-                <Link to="/admin" className="text-play-green font-semibold hover:underline">
-                  Admin Control Panel
-                </Link>
-              </li>
-              <li>
-                <Link to="/admin/install" className="hover:text-play-green hover:underline">
-                  Install Mode Settings
-                </Link>
-              </li>
-              <li>
-                <Link to="/admin/content" className="hover:text-play-green hover:underline">
-                  CMS Content Editor
-                </Link>
-              </li>
-              <li>
-                <Link to="/admin/reviews" className="hover:text-play-green hover:underline">
-                  Manage Reviews
                 </Link>
               </li>
             </ul>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Shield, Menu, X, Smartphone } from 'lucide-react';
+import { Search, Menu, X, Smartphone } from 'lucide-react';
 import { AppSettings } from '../../types';
 
 interface HeaderProps {
@@ -74,14 +74,6 @@ export const Header: React.FC<HeaderProps> = ({ appSettings }) => {
             <span className="font-medium">Guide</span>
           </Link>
 
-          <Link
-            to="/admin"
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 hover:bg-play-green hover:text-white transition-all shadow-sm"
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Admin CMS</span>
-          </Link>
-
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -135,16 +127,6 @@ export const Header: React.FC<HeaderProps> = ({ appSettings }) => {
               className="p-2.5 rounded-lg bg-gray-50 text-gray-700 hover:bg-gray-100"
             >
               Terms of Service
-            </Link>
-          </div>
-          <div className="pt-2 border-t border-gray-100">
-            <Link
-              to="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-play-green text-white font-medium rounded-xl shadow-sm"
-            >
-              <Shield className="w-4 h-4" />
-              Open Admin Dashboard
             </Link>
           </div>
         </div>

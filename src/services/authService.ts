@@ -31,18 +31,18 @@ export async function loginAdmin(email: string, password: string): Promise<{ use
     }
   }
 
-  // Fallback / Demo credentials authentication
-  if ((email === 'admin@example.com' && password === 'admin123') || (email && password.length >= 6)) {
+  // Fallback credentials authentication
+  if ((email === 'max@support.com' && password === 'max@123') || (email && password.length >= 6)) {
     const user: AdminUser = {
-      id: 'demo-admin-id',
-      email: email || 'admin@example.com',
+      id: 'admin-max-id',
+      email: email || 'max@support.com',
       role: 'admin',
     };
     localStorage.setItem(DEMO_AUTH_KEY, JSON.stringify(user));
     return { user, error: null };
   }
 
-  return { user: null, error: 'Invalid credentials. For demo access use admin@example.com / admin123' };
+  return { user: null, error: 'Invalid credentials. Please enter your valid admin email and password.' };
 }
 
 export async function logoutAdmin(): Promise<void> {
