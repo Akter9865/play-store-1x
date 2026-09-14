@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>SuperPlay App - Modern Entertainment & Utilities</title>
+    
+    <!-- Meta Descriptions & SEO -->
+    <meta name="description" content="SuperPlay App delivers next-generation utility and entertainment. Download now for fluid performance, customizable themes, and offline actions." />
+    <meta name="theme-color" content="#01875f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="SuperPlay" />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SuperPlay App - Modern Entertainment & Utilities" />
+    <meta property="og:description" content="Explore fluid performance, verified security, and customizable themes." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- PWA Manifest & Favicon -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%200%20100%20100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%2301875f%22/><path d=%22M32%2024L74%2050L32%2076Z%22 fill=%22white%22/></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%200%20100%20100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%2301875f%22/><path d=%22M32%2024L74%2050L32%2076Z%22 fill=%22white%22/></svg>" />
+  </head>
+  <body class="bg-white text-play-text-primary antialiased selection:bg-play-green selection:text-white font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Register service worker for PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.log('SW registration error:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
