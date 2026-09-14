@@ -11,15 +11,18 @@ import {
   Smartphone,
   Info,
   Check,
+  Loader2,
 } from 'lucide-react';
 import { AppSettings, InstallSettings } from '../../types';
 import { logAnalyticsEvent } from '../../services/dataService';
+import { ButtonFlowState } from '../../hooks/useInstallFlow';
 
 interface AppHeroProps {
   appSettings: AppSettings;
   installSettings: InstallSettings;
   onInstallClick: () => void;
   isDownloading?: boolean;
+  buttonState?: ButtonFlowState;
 }
 
 export const AppHero: React.FC<AppHeroProps> = ({
@@ -27,6 +30,7 @@ export const AppHero: React.FC<AppHeroProps> = ({
   installSettings,
   onInstallClick,
   isDownloading = false,
+  buttonState = 'idle',
 }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
@@ -154,11 +158,35 @@ export const AppHero: React.FC<AppHeroProps> = ({
             <button
               id="main-install-btn"
               onClick={onInstallClick}
-              disabled={isDownloading}
-              className="w-full sm:w-auto min-w-[220px] px-8 py-3 bg-play-green hover:bg-play-green-hover active:scale-[0.98] text-white font-medium text-sm sm:text-base rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-80"
+              disabled={buttonState === 'initializing' || buttonState === 'downloading'}
+              className="w-full sm:w-auto min-w-[220px] px-8 py-3 bg-play-green hover:bg-play-green-hover active:scale-[0.98] text-white font-medium text-sm sm:text-base rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-90"
             >
-              <Download className={`w-4 h-4 ${isDownloading ? 'animate-bounce' : ''}`} />
-              <span>{isDownloading ? 'Starting Download...' : installSettings.button_text || 'Install'}</span>
+              {buttonState === 'initializing' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>{installSettings.initializing_text || 'Initializing...'}</span>
+                </>
+              ) : buttonState === 'downloading' || isDownloading ? (
+                <>
+                  <Download className="w-4 h-4 animate-bounce text-white" />
+                  <span>{installSettings.downloading_text || 'Downloading...'}</span>
+                </>
+              ) : buttonState === 'installing' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>{installSettings.installing_text || 'Installing...'}</span>
+                </>
+              ) : buttonState === 'open' ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                  <span>{installSettings.open_text || 'Open'}</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>{installSettings.button_text || 'Install'}</span>
+                </>
+              )}
             </button>
 
             {/* Secondary Actions: Share & Wishlist */}

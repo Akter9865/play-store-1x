@@ -47,6 +47,14 @@ Key Features & Highlights:
   site_logo_url: '',
   site_badge_text: 'Verified',
   show_site_badge: true,
+  pwa_name: 'SuperPlay App',
+  pwa_short_name: 'SuperPlay',
+  pwa_theme_color: '#01875f',
+  pwa_background_color: '#ffffff',
+  icon_192_url: '/icon-192.png',
+  icon_512_url: '/icon-512.png',
+  apple_touch_icon_url: '/apple-touch-icon.png',
+  favicon_url: '/favicon.png',
 };
 
 export const initialInstallSettings: InstallSettings = {
@@ -59,6 +67,10 @@ export const initialInstallSettings: InstallSettings = {
   open_new_tab: true,
   confirmation_enabled: true,
   button_text: 'Install',
+  initializing_text: 'Initializing...',
+  downloading_text: 'Downloading...',
+  installing_text: 'Installing...',
+  open_text: 'Open',
   success_message: 'Download initiated. Please check your notification bar or browser downloads.',
   android_message: 'Download the verified Android APK directly to your phone or tablet.',
   ios_message: 'Add this web application directly to your iPhone/iPad Home Screen in 3 easy steps.',

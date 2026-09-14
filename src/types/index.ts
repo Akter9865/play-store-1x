@@ -22,6 +22,14 @@ export interface AppSettings {
   site_logo_url?: string;
   site_badge_text?: string;
   show_site_badge?: boolean;
+  pwa_name?: string;
+  pwa_short_name?: string;
+  pwa_theme_color?: string;
+  pwa_background_color?: string;
+  icon_192_url?: string;
+  icon_512_url?: string;
+  apple_touch_icon_url?: string;
+  favicon_url?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -75,6 +83,10 @@ export interface InstallSettings {
   open_new_tab: boolean;
   confirmation_enabled: boolean;
   button_text: string;
+  initializing_text?: string;
+  downloading_text?: string;
+  installing_text?: string;
+  open_text?: string;
   success_message: string;
   android_message: string;
   ios_message: string;

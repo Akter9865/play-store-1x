@@ -1,22 +1,39 @@
 {
-  "name": "SuperPlay App Store",
+  "id": "/?source=pwa",
+  "name": "SuperPlay App",
   "short_name": "SuperPlay",
-  "description": "Next-generation utility and entertainment application.",
-  "start_url": "/",
+  "description": "Next-generation entertainment and utilities. Fast, secure, and always ready.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#01875f",
-  "orientation": "portrait-primary",
+  "orientation": "any",
+  "categories": ["entertainment", "games", "utilities"],
   "icons": [
     {
       "src": "/icon-192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ]
 }

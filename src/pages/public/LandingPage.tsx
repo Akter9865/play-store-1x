@@ -17,6 +17,7 @@ import {
   getPrivacySettings,
 } from '../../services/dataService';
 import { useInstallFlow } from '../../hooks/useInstallFlow';
+import { useDynamicPwa } from '../../hooks/useDynamicPwa';
 import { AppHero } from '../../components/public/AppHero';
 import { ScreenshotGallery } from '../../components/public/ScreenshotGallery';
 import { AboutSection } from '../../components/public/AboutSection';
@@ -70,12 +71,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
     device,
     isModalOpen,
     modalType,
+    buttonState,
     isDownloading,
     handleInstallClick,
     closeModal,
     triggerExternalUrl,
     triggerApkDownload,
   } = useInstallFlow(installSettings);
+
+  // Sync PWA manifest and icons dynamically from appSettings
+  useDynamicPwa(appSettings);
 
   if (isLoading || !installSettings) {
     return (
@@ -94,6 +99,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
         installSettings={installSettings}
         onInstallClick={handleInstallClick}
         isDownloading={isDownloading}
+        buttonState={buttonState}
       />
 
       {/* 2. Screenshot Gallery */}
