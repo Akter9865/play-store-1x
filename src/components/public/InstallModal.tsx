@@ -37,8 +37,13 @@ export const InstallModal: React.FC<InstallModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-play-modal overflow-hidden border border-gray-100 animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-6 sm:pt-12 md:pt-14 p-4 bg-black/45 backdrop-blur-xs overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 animate-slide-down mb-8">
         {/* Close Button */}
         <button
           onClick={onClose}
