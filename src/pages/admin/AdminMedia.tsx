@@ -26,11 +26,14 @@ export const AdminMedia: React.FC = () => {
 
   // New item modal
   const [showAddModal, setShowAddModal] = useState(false);
+  const [uploadSource, setUploadSource] = useState<'file' | 'url'>('file');
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [newTitle, setNewTitle] = useState('');
   const [newCaption, setNewCaption] = useState('');
   const [newType, setNewType] = useState<'screenshot' | 'banner' | 'promo'>('screenshot');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     loadMedia();
@@ -66,17 +69,25 @@ export const AdminMedia: React.FC = () => {
 
   const handleCreateMedia = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile) return;
+    if (uploadSource === 'file' && !selectedFile) return;
+    if (uploadSource === 'url' && !newImageUrl.trim()) return;
 
     setIsUploading(true);
+    setStatusMessage(null);
+
     try {
-      const bucket = newType === 'banner' ? 'banners' : 'screenshots';
-      const uploaded = await uploadFile(bucket, selectedFile);
+      let finalUrl = newImageUrl.trim();
+
+      if (uploadSource === 'file' && selectedFile) {
+        const bucket = newType === 'banner' ? 'banners' : 'screenshots';
+        const uploaded = await uploadFile(bucket, selectedFile);
+        finalUrl = uploaded.url;
+      }
 
       await saveMediaItem({
         type: newType,
-        url: uploaded.url,
-        title: newTitle || selectedFile.name,
+        url: finalUrl,
+        title: newTitle || (selectedFile ? selectedFile.name : 'Screenshot'),
         caption: newCaption,
         enabled: true,
       });
@@ -84,15 +95,24 @@ export const AdminMedia: React.FC = () => {
       setShowAddModal(false);
       setSelectedFile(null);
       setFilePreviewUrl(null);
+      setNewImageUrl('');
       setNewTitle('');
       setNewCaption('');
+      setStatusMessage({ type: 'success', text: 'Media asset uploaded and saved successfully!' });
       await loadMedia();
-    } catch (err) {
-      alert('Failed to upload media item.');
+
+      setTimeout(() => {
+        setStatusMessage(null);
+      }, 4000);
+    } catch (err: unknown) {
+      console.error('Failed to upload media item:', err);
+      const msg = err instanceof Error ? err.message : 'Unknown error occurred';
+      setStatusMessage({ type: 'error', text: `Failed to save media: ${msg}` });
     } finally {
       setIsUploading(false);
     }
   };
+
 
   const handleToggleEnabled = async (item: MediaItem) => {
     await saveMediaItem({ ...item, enabled: !item.enabled });
@@ -127,6 +147,25 @@ export const AdminMedia: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-5xl">
+      {/* Status Message */}
+      {statusMessage && (
+        <div
+          className={`p-4 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between shadow-xs border ${
+            statusMessage.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-red-50 text-red-800 border-red-200'
+          }`}
+        >
+          <span>{statusMessage.text}</span>
+          <button
+            onClick={() => setStatusMessage(null)}
+            className="text-gray-400 hover:text-gray-600 font-bold ml-2"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -260,9 +299,9 @@ export const AdminMedia: React.FC = () => {
       {/* Upload Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-play-modal overflow-hidden p-6 border border-gray-100">
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-play-modal overflow-hidden p-6 border border-gray-100 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
-              <h3 className="font-bold text-gray-900 text-base">Upload Media Asset</h3>
+              <h3 className="font-bold text-gray-900 text-base">Add Media Asset</h3>
               <button
                 onClick={() => setShowAddModal(false)}
                 className="p-1.5 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100"
@@ -271,41 +310,82 @@ export const AdminMedia: React.FC = () => {
               </button>
             </div>
 
+            {/* Tab: File Upload vs URL */}
+            <div className="flex bg-gray-100 p-1 rounded-xl mb-4 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setUploadSource('file')}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  uploadSource === 'file' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-900'
+                }`}
+              >
+                Upload File
+              </button>
+              <button
+                type="button"
+                onClick={() => setUploadSource('url')}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  uploadSource === 'url' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-900'
+                }`}
+              >
+                Image URL
+              </button>
+            </div>
+
             <form onSubmit={handleCreateMedia} className="space-y-4">
               {/* File Selector */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Select Image File
-                </label>
-                {filePreviewUrl ? (
-                  <div className="relative w-full h-44 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 mb-2">
-                    <img src={filePreviewUrl} alt="" className="w-full h-full object-contain" />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedFile(null);
-                        setFilePreviewUrl(null);
-                      }}
-                      className="absolute top-2 right-2 p-1 bg-black/60 text-white rounded-full"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-play-green bg-gray-50/50">
-                    <Upload className="w-6 h-6 text-gray-400 mb-1" />
-                    <span className="text-xs font-semibold text-gray-700">Choose PNG, JPG, or WebP</span>
-                    <span className="text-[11px] text-gray-400">Up to 10MB</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      required
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
+              {uploadSource === 'file' ? (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Select Image File
                   </label>
-                )}
-              </div>
+                  {filePreviewUrl ? (
+                    <div className="relative w-full h-44 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 mb-2">
+                      <img src={filePreviewUrl} alt="" className="w-full h-full object-contain" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setFilePreviewUrl(null);
+                        }}
+                        className="absolute top-2 right-2 p-1 bg-black/60 text-white rounded-full"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-play-green bg-gray-50/50">
+                      <Upload className="w-6 h-6 text-gray-400 mb-1" />
+                      <span className="text-xs font-semibold text-gray-700">Choose PNG, JPG, or WebP</span>
+                      <span className="text-[11px] text-gray-400">Up to 10MB</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        required={uploadSource === 'file'}
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Image URL</label>
+                  <input
+                    type="url"
+                    required={uploadSource === 'url'}
+                    value={newImageUrl}
+                    onChange={(e) => setNewImageUrl(e.target.value)}
+                    placeholder="https://example.com/screenshot.png"
+                    className="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 outline-none focus:border-play-green"
+                  />
+                  {newImageUrl && (
+                    <div className="mt-2 relative w-full h-36 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                      <img src={newImageUrl} alt="Preview" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Asset Type</label>
@@ -352,10 +432,13 @@ export const AdminMedia: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={isUploading || !selectedFile}
-                  className="px-5 py-2 bg-play-green hover:bg-play-green-hover text-white text-xs font-semibold rounded-xl disabled:opacity-50"
+                  disabled={isUploading || (uploadSource === 'file' ? !selectedFile : !newImageUrl.trim())}
+                  className="px-5 py-2 bg-play-green hover:bg-play-green-hover text-white text-xs font-semibold rounded-xl disabled:opacity-50 flex items-center gap-2"
                 >
-                  {isUploading ? 'Uploading...' : 'Save Media'}
+                  {isUploading && (
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                  <span>{isUploading ? 'Saving...' : 'Save Media'}</span>
                 </button>
               </div>
             </form>

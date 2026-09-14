@@ -139,12 +139,20 @@ export async function saveMediaItem(item: Partial<MediaItem>): Promise<MediaItem
     setLocal(STORAGE_KEYS.MEDIA, newItems);
 
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('media').update(result).eq('id', item.id);
+      await supabase.from('media').update({
+        type: result.type,
+        url: result.url,
+        title: result.title,
+        caption: result.caption,
+        sort_order: result.sort_order,
+        enabled: result.enabled,
+      }).eq('id', item.id);
     }
   } else {
     // Create
+    const generatedId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined;
     result = {
-      id: 'media-' + Date.now(),
+      id: generatedId || ('media-' + Date.now()),
       type: item.type || 'screenshot',
       url: item.url || '',
       title: item.title || '',
@@ -153,12 +161,27 @@ export async function saveMediaItem(item: Partial<MediaItem>): Promise<MediaItem
       enabled: item.enabled ?? true,
       created_at: new Date().toISOString(),
     };
-    const newItems = [...items, result];
-    setLocal(STORAGE_KEYS.MEDIA, newItems);
 
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('media').insert(result);
+      const payload: Record<string, any> = {
+        type: result.type,
+        url: result.url,
+        title: result.title,
+        caption: result.caption,
+        sort_order: result.sort_order,
+        enabled: result.enabled,
+      };
+      if (generatedId) payload.id = generatedId;
+      const { data, error } = await supabase.from('media').insert(payload).select().single();
+      if (!error && data) {
+        result = data as MediaItem;
+      } else if (error) {
+        console.error('Error inserting media item to Supabase:', error);
+      }
     }
+
+    const newItems = [...items, result];
+    setLocal(STORAGE_KEYS.MEDIA, newItems);
   }
 
   return result;
@@ -214,11 +237,22 @@ export async function saveReview(review: Partial<Review>): Promise<Review> {
     setLocal(STORAGE_KEYS.REVIEWS, updated);
 
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('reviews').update(result).eq('id', review.id);
+      await supabase.from('reviews').update({
+        reviewer_name: result.reviewer_name,
+        avatar_url: result.avatar_url,
+        rating: result.rating,
+        review_text: result.review_text,
+        helpful_count: result.helpful_count,
+        developer_response: result.developer_response,
+        published: result.published,
+        featured: result.featured,
+        sort_order: result.sort_order,
+      }).eq('id', review.id);
     }
   } else {
+    const generatedId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined;
     result = {
-      id: 'rev-' + Date.now(),
+      id: generatedId || ('rev-' + Date.now()),
       reviewer_name: review.reviewer_name || 'Anonymous User',
       rating: review.rating || 5,
       review_text: review.review_text || '',
@@ -231,12 +265,32 @@ export async function saveReview(review: Partial<Review>): Promise<Review> {
       sort_order: reviews.length + 1,
       created_at: new Date().toISOString(),
     };
-    const updated = [result, ...reviews];
-    setLocal(STORAGE_KEYS.REVIEWS, updated);
 
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('reviews').insert(result);
+      const payload: Record<string, any> = {
+        reviewer_name: result.reviewer_name,
+        avatar_url: result.avatar_url,
+        rating: result.rating,
+        review_text: result.review_text,
+        review_date: new Date().toISOString().split('T')[0],
+        helpful_count: result.helpful_count,
+        developer_response: result.developer_response,
+        developer_response_date: result.developer_response_date ? new Date().toISOString().split('T')[0] : null,
+        published: result.published,
+        featured: result.featured,
+        sort_order: result.sort_order,
+      };
+      if (generatedId) payload.id = generatedId;
+      const { data, error } = await supabase.from('reviews').insert(payload).select().single();
+      if (!error && data) {
+        result = data as Review;
+      } else if (error) {
+        console.error('Error inserting review to Supabase:', error);
+      }
     }
+
+    const updated = [result, ...reviews];
+    setLocal(STORAGE_KEYS.REVIEWS, updated);
   }
 
   return result;
@@ -293,11 +347,17 @@ export async function saveReleaseNote(note: Partial<ReleaseNote>): Promise<Relea
     setLocal(STORAGE_KEYS.RELEASE_NOTES, updated);
 
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('release_notes').update(result).eq('id', note.id);
+      await supabase.from('release_notes').update({
+        version: result.version,
+        title: result.title,
+        content: result.content,
+        published: result.published,
+      }).eq('id', note.id);
     }
   } else {
+    const generatedId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined;
     result = {
-      id: 'rel-' + Date.now(),
+      id: generatedId || ('rel-' + Date.now()),
       version: note.version || '1.0.0',
       title: note.title || 'Update',
       content: note.content || '',
@@ -305,12 +365,26 @@ export async function saveReleaseNote(note: Partial<ReleaseNote>): Promise<Relea
       published: note.published ?? true,
       created_at: new Date().toISOString(),
     };
-    const updated = [result, ...notes];
-    setLocal(STORAGE_KEYS.RELEASE_NOTES, updated);
 
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('release_notes').insert(result);
+      const payload: Record<string, any> = {
+        version: result.version,
+        title: result.title,
+        content: result.content,
+        release_date: new Date().toISOString().split('T')[0],
+        published: result.published,
+      };
+      if (generatedId) payload.id = generatedId;
+      const { data, error } = await supabase.from('release_notes').insert(payload).select().single();
+      if (!error && data) {
+        result = data as ReleaseNote;
+      } else if (error) {
+        console.error('Error inserting release note to Supabase:', error);
+      }
     }
+
+    const updated = [result, ...notes];
+    setLocal(STORAGE_KEYS.RELEASE_NOTES, updated);
   }
 
   return result;
@@ -455,23 +529,30 @@ export async function uploadFile(
   bucket: 'app-assets' | 'screenshots' | 'banners' | 'apk',
   file: File
 ): Promise<{ url: string; filename: string; size: number }> {
-  const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+  const fileExt = file.name.split('.').pop() || 'png';
+  const cleanBase = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const filename = `${Date.now()}_${cleanBase}.${fileExt}`;
 
   if (isSupabaseConfigured && supabase) {
-    const { data, error } = await supabase.storage.from(bucket).upload(filename, file, {
-      cacheControl: '3600',
-      upsert: true,
-    });
+    try {
+      const { data, error } = await supabase.storage.from(bucket).upload(filename, file, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: file.type || undefined,
+      });
 
-    if (!error && data) {
-      const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(filename);
-      return {
-        url: publicUrlData.publicUrl,
-        filename: file.name,
-        size: file.size,
-      };
-    } else {
-      console.warn('Supabase storage upload error, falling back to local object:', error);
+      if (!error && data) {
+        const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(filename);
+        return {
+          url: publicUrlData.publicUrl,
+          filename: file.name,
+          size: file.size,
+        };
+      } else if (error) {
+        console.warn('Supabase storage upload error, falling back to local object:', error);
+      }
+    } catch (e) {
+      console.warn('Supabase storage exception:', e);
     }
   }
 
@@ -489,3 +570,4 @@ export async function uploadFile(
     reader.readAsDataURL(file);
   });
 }
+
