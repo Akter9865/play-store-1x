@@ -130,6 +130,17 @@ export const AdminContent: React.FC = () => {
     }
   };
 
+  const handleMarketLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !appSettings) return;
+    const file = e.target.files[0];
+    try {
+      const res = await uploadFile('app-assets', file);
+      setAppSettings({ ...appSettings, site_logo_url: res.url });
+    } catch (err) {
+      alert('Marketplace logo upload failed. Please try again.');
+    }
+  };
+
   const handleAddFeature = () => {
     if (!newFeatureText.trim() || !appSettings) return;
     setAppSettings({
@@ -253,6 +264,101 @@ export const AdminContent: React.FC = () => {
       {/* TAB 1: APP INFO */}
       {activeTab === 'app_info' && (
         <form onSubmit={handleSaveAppInfo} className="space-y-6">
+          {/* Top Marketplace Header Branding */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-6">
+            <div className="border-b border-gray-100 pb-3">
+              <h3 className="text-base font-bold text-gray-900">
+                Marketplace Header Brand (Logo, Name & Badge)
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Customize the top navbar brand logo, marketplace title, and verification badge
+              </p>
+            </div>
+
+            {/* Marketplace Logo row */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">Marketplace Brand Logo</label>
+              <div className="flex items-center gap-4">
+                {appSettings.site_logo_url ? (
+                  <img
+                    src={appSettings.site_logo_url}
+                    alt="Marketplace Logo"
+                    className="w-14 h-14 rounded-xl object-contain border border-gray-200 bg-white p-1 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-tr from-play-green to-emerald-400 flex items-center justify-center shadow-sm">
+                    <svg className="w-7 h-7 text-white fill-current ml-0.5" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-gray-700 cursor-pointer transition-colors">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload Custom Logo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleMarketLogoUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    {appSettings.site_logo_url && (
+                      <button
+                        type="button"
+                        onClick={() => setAppSettings({ ...appSettings, site_logo_url: '' })}
+                        className="px-3 py-2 text-xs font-semibold text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl border border-gray-200 transition-colors"
+                      >
+                        Reset to Default Icon
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-400">Recommended: Square PNG, SVG, or WebP with transparent background</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Marketplace Name & Badge row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Marketplace Brand Name</label>
+                <input
+                  type="text"
+                  value={appSettings.site_name || ''}
+                  onChange={(e) => setAppSettings({ ...appSettings, site_name: e.target.value })}
+                  placeholder="e.g. AppMarket"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-play-green font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Badge Text</label>
+                <input
+                  type="text"
+                  value={appSettings.site_badge_text || ''}
+                  onChange={(e) => setAppSettings({ ...appSettings, site_badge_text: e.target.value })}
+                  placeholder="e.g. Verified"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-play-green"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={appSettings.show_site_badge !== false}
+                  onChange={(e) => setAppSettings({ ...appSettings, show_site_badge: e.target.checked })}
+                  className="w-4 h-4 text-play-green rounded border-gray-300 focus:ring-play-green"
+                />
+                <span>Show Verified badge next to marketplace brand name</span>
+              </label>
+            </div>
+          </div>
+
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-6">
             <h3 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
               Hero Information & Badges

@@ -30,6 +30,10 @@ CREATE TABLE IF NOT EXISTS public.app_settings (
   banner_url TEXT DEFAULT 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
   verified BOOLEAN DEFAULT TRUE,
   editors_choice BOOLEAN DEFAULT TRUE,
+  site_name TEXT DEFAULT 'AppMarket',
+  site_logo_url TEXT DEFAULT '',
+  site_badge_text TEXT DEFAULT 'Verified',
+  show_site_badge BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

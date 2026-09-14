@@ -18,6 +18,10 @@ export interface AppSettings {
   banner_url?: string;
   verified: boolean;
   editors_choice: boolean;
+  site_name?: string;
+  site_logo_url?: string;
+  site_badge_text?: string;
+  show_site_badge?: boolean;
   created_at?: string;
   updated_at?: string;
 }

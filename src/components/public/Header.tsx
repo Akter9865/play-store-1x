@@ -18,18 +18,28 @@ export const Header: React.FC<HeaderProps> = ({ appSettings }) => {
         {/* Left: App Marketplace Brand Logo */}
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2.5 group">
-            {/* Custom stylized play triangle logo (original brand asset) */}
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-play-green to-emerald-400 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-              <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </div>
+            {/* Dynamic Market Logo or Default Play Triangle */}
+            {appSettings.site_logo_url ? (
+              <img
+                src={appSettings.site_logo_url}
+                alt={appSettings.site_name || 'AppMarket'}
+                className="w-9 h-9 rounded-lg object-contain shadow-sm group-hover:scale-105 transition-transform border border-gray-100 bg-white p-0.5"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-play-green to-emerald-400 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            )}
             <div className="flex flex-col">
               <span className="text-lg font-bold tracking-tight text-gray-900 flex items-center gap-1.5">
-                AppMarket
-                <span className="text-xs px-1.5 py-0.5 font-medium rounded bg-emerald-50 text-play-green border border-emerald-200/60">
-                  Verified
-                </span>
+                {appSettings.site_name || 'AppMarket'}
+                {appSettings.show_site_badge !== false && (
+                  <span className="text-xs px-1.5 py-0.5 font-medium rounded bg-emerald-50 text-play-green border border-emerald-200/60">
+                    {appSettings.site_badge_text || 'Verified'}
+                  </span>
+                )}
               </span>
             </div>
           </Link>

@@ -43,6 +43,10 @@ Key Features & Highlights:
   banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
   verified: true,
   editors_choice: true,
+  site_name: 'AppMarket',
+  site_logo_url: '',
+  site_badge_text: 'Verified',
+  show_site_badge: true,
 };
 
 export const initialInstallSettings: InstallSettings = {
