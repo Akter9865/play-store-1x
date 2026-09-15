@@ -5,9 +5,17 @@ import { AppSettings } from '../../types';
 
 interface HeaderProps {
   appSettings: AppSettings;
+  activePlatform?: 'android' | 'ios';
+  onPlatformToggle?: (platform: 'android' | 'ios') => void;
+  showPlatformSwitcher?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ appSettings }) => {
+export const Header: React.FC<HeaderProps> = ({
+  appSettings,
+  activePlatform = 'android',
+  onPlatformToggle,
+  showPlatformSwitcher = true,
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -65,7 +73,37 @@ export const Header: React.FC<HeaderProps> = ({ appSettings }) => {
         </div>
 
         {/* Center / Right: Search & Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Desktop Platform Switcher Toggle */}
+          {showPlatformSwitcher && onPlatformToggle && (
+            <div className="hidden sm:flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200/80 text-xs">
+              <button
+                type="button"
+                onClick={() => onPlatformToggle('android')}
+                className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                  activePlatform === 'android'
+                    ? 'bg-play-green text-white shadow-xs font-semibold'
+                    : 'text-gray-500 hover:text-gray-900'
+                }`}
+                title="View Android Google Play Store presentation"
+              >
+                🤖 Android Play
+              </button>
+              <button
+                type="button"
+                onClick={() => onPlatformToggle('ios')}
+                className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                  activePlatform === 'ios'
+                    ? 'bg-[#0071e3] text-white shadow-xs font-semibold'
+                    : 'text-gray-500 hover:text-gray-900'
+                }`}
+                title="View Apple iOS App Store presentation"
+              >
+                🍎 iOS Store
+              </button>
+            </div>
+          )}
+
           <button
             onClick={() => setShowSearchModal(true)}
             className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors"
@@ -109,6 +147,40 @@ export const Header: React.FC<HeaderProps> = ({ appSettings }) => {
               <div className="text-xs text-gray-500 truncate">{appSettings.category}</div>
             </div>
           </div>
+          {/* Mobile Platform Switcher */}
+          {showPlatformSwitcher && onPlatformToggle && (
+            <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  onPlatformToggle('android');
+                  setMobileMenuOpen(false);
+                }}
+                className={`py-2 rounded-lg font-medium text-center transition-all ${
+                  activePlatform === 'android'
+                    ? 'bg-play-green text-white shadow-xs font-semibold'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                🤖 Google Play View
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onPlatformToggle('ios');
+                  setMobileMenuOpen(false);
+                }}
+                className={`py-2 rounded-lg font-medium text-center transition-all ${
+                  activePlatform === 'ios'
+                    ? 'bg-[#0071e3] text-white shadow-xs font-semibold'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                🍎 iOS App Store View
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-2 pt-1 text-sm font-medium">
             <Link
               to="/"

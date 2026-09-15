@@ -22,6 +22,7 @@ interface InstallModalProps {
   modalType: ModalFlowType;
   onProceedExternalUrl?: () => void;
   onDownloadApk?: () => void;
+  onTriggerNativePrompt?: () => void;
 }
 
 export const InstallModal: React.FC<InstallModalProps> = ({
@@ -33,6 +34,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
   modalType,
   onProceedExternalUrl,
   onDownloadApk,
+  onTriggerNativePrompt,
 }) => {
   if (!isOpen) return null;
 
@@ -53,7 +55,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        {/* Top Graphic Illustration (Inspired by screenshot 5) */}
+        {/* Top Graphic Illustration */}
         <div className="pt-8 pb-4 px-6 flex justify-center bg-gradient-to-b from-gray-50 to-white">
           <div className="relative w-48 h-28 flex items-center justify-center">
             {/* Monitor / Laptop Illustration */}
@@ -115,7 +117,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
 
               {/* App row */}
               <div className="mt-4 flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200/80">
-                <img src={appSettings.icon_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                <img src={appSettings.apple_touch_icon_url || appSettings.icon_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-gray-900 truncate">{appSettings.app_name}</div>
                   <div className="text-xs text-gray-500 truncate">{window.location.hostname}</div>
@@ -126,6 +128,76 @@ export const InstallModal: React.FC<InstallModalProps> = ({
                 <button
                   onClick={onClose}
                   className="w-full py-2.5 px-5 bg-play-green text-white font-medium text-sm rounded-xl hover:bg-play-green-hover"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* FLOW: ANDROID PWA INSTALLATION GUIDE */}
+          {modalType === 'android_pwa_guide' && (
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 text-center">
+                Install {appSettings.app_name}
+              </h2>
+              <p className="mt-1.5 text-xs text-gray-500 text-center">
+                Add {appSettings.app_name} directly to your Android device for instant home-screen access.
+              </p>
+
+              {/* Step by step Android guide */}
+              <div className="mt-5 space-y-3 bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-play-green text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    1
+                  </div>
+                  <div className="text-xs text-gray-800">
+                    Tap the <strong>three dots (⋮)</strong> menu in the top-right of your browser.
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-play-green text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    2
+                  </div>
+                  <div className="text-xs text-gray-800">
+                    Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-play-green text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    3
+                  </div>
+                  <div className="text-xs text-gray-800">
+                    Tap <strong>Install</strong> to add {appSettings.app_name} to your home screen!
+                  </div>
+                </div>
+              </div>
+
+              {/* App mini-preview row */}
+              <div className="mt-4 flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200/80">
+                <img src={appSettings.icon_url || '/1xbetfair-icon.png'} alt="" className="w-10 h-10 rounded-xl object-cover shadow-xs" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold text-gray-900 truncate">{appSettings.app_name}</div>
+                  <div className="text-xs text-emerald-600 font-medium">Ready to install on Mobile</div>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-2">
+                {onTriggerNativePrompt && (
+                  <button
+                    onClick={() => {
+                      onTriggerNativePrompt();
+                    }}
+                    className="w-full py-2.5 bg-play-green text-white font-medium text-sm rounded-xl hover:bg-play-green-hover shadow-sm transition-all"
+                  >
+                    Try Install Now
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="w-full py-2.5 bg-gray-100 text-gray-700 font-medium text-sm rounded-xl hover:bg-gray-200 transition-colors"
                 >
                   Got it
                 </button>

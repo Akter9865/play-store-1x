@@ -3,20 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-    <title>SuperPlay App - Modern Entertainment & Utilities</title>
+    <title>1Xbetfair - Official Live Sports & Exchange</title>
     
     <!-- Meta Descriptions & SEO -->
-    <meta name="description" content="SuperPlay App delivers next-generation utility and entertainment. Download now for fluid performance, customizable themes, and offline actions." />
-    <meta name="theme-color" content="#01875f" />
+    <meta name="description" content="1Xbetfair delivers live sports odds, exchange markets, top casino games, and instant withdrawal verification. Enjoy fast, secure mobile gaming on any device." />
+    <meta name="theme-color" content="#0088cc" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="SuperPlay" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="1Xbetfair" />
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="SuperPlay App - Modern Entertainment & Utilities" />
-    <meta property="og:description" content="Explore fluid performance, verified security, and customizable themes." />
-    <meta property="og:image" content="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80" />
+    <meta property="og:title" content="1Xbetfair - Official Live Sports & Exchange" />
+    <meta property="og:description" content="Live sports odds, exchange markets, and instant withdrawal verification." />
+    <meta property="og:image" content="/icon-512.png" />
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,6 +32,18 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
+      // Global PWA install prompt handler to never miss beforeinstallprompt
+      window.deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        window.dispatchEvent(new CustomEvent('pwa-prompt-available', { detail: e }));
+      });
+      window.addEventListener('appinstalled', () => {
+        window.deferredPrompt = null;
+        window.dispatchEvent(new CustomEvent('pwa-installed'));
+      });
+
       // Register service worker for PWA
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

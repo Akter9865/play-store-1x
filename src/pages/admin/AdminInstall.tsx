@@ -532,7 +532,7 @@ export const AdminInstall: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
                 1. Idle / Default Text
@@ -548,7 +548,7 @@ export const AdminInstall: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                2. Initializing Spinner Text
+                2. Initializing Text
               </label>
               <input
                 type="text"
@@ -574,7 +574,7 @@ export const AdminInstall: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                4. Completed / Open Text
+                4. Open / Launch Text
               </label>
               <input
                 type="text"
@@ -582,6 +582,19 @@ export const AdminInstall: React.FC = () => {
                 onChange={(e) => setSettings({ ...settings, open_text: e.target.value })}
                 placeholder="Open"
                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-play-green"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-blue-600 mb-1">
+                5. iOS Button Text
+              </label>
+              <input
+                type="text"
+                value={settings.ios_button_text || 'GET'}
+                onChange={(e) => setSettings({ ...settings, ios_button_text: e.target.value })}
+                placeholder="GET"
+                className="w-full px-3.5 py-2.5 bg-blue-50/50 border border-blue-200 rounded-xl text-sm font-bold text-blue-600 outline-none focus:border-blue-500"
               />
             </div>
           </div>
@@ -696,6 +709,85 @@ export const AdminInstall: React.FC = () => {
                 />
                 <span>Show confirmation dialog before redirecting</span>
               </label>
+            </div>
+          </div>
+
+          {/* Apple iOS App Store / Destination Section */}
+          <div className="border-t border-gray-100 pt-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-[#0071e3]" />
+              <label className="text-sm font-semibold text-gray-800">
+                Apple iOS App Store / Target Destination URL
+              </label>
+            </div>
+            <p className="text-xs text-gray-500">
+              When an iOS visitor taps the "GET" button, they will be redirected to this URL (e.g. Apple App Store app listing or iOS destination). If left blank, iOS Add to Home Screen step-by-step guide is shown.
+            </p>
+            <input
+              type="url"
+              value={settings.ios_store_url || ''}
+              onChange={(e) => setSettings({ ...settings, ios_store_url: e.target.value })}
+              placeholder="https://apps.apple.com/app/id1234567890 or https://yourdomain.com/ios"
+              className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-blue-500 font-mono"
+            />
+          </div>
+
+          {/* Store Presentation Mode */}
+          <div className="border-t border-gray-100 pt-5 space-y-3">
+            <label className="text-sm font-semibold text-gray-800 block">
+              Store Presentation Mode
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div
+                onClick={() => setSettings({ ...settings, store_theme_mode: 'auto' })}
+                className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                  (settings.store_theme_mode || 'auto') === 'auto'
+                    ? 'border-blue-500 bg-blue-50/40 font-semibold text-blue-900'
+                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span>Smart Auto (Recommended)</span>
+                  {(settings.store_theme_mode || 'auto') === 'auto' && <Check className="w-4 h-4 text-blue-600" />}
+                </div>
+                <p className="text-[11px] text-gray-500 font-normal">
+                  Android sees Google Play Store, iOS sees Apple App Store.
+                </p>
+              </div>
+
+              <div
+                onClick={() => setSettings({ ...settings, store_theme_mode: 'android_only' })}
+                className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                  settings.store_theme_mode === 'android_only'
+                    ? 'border-play-green bg-emerald-50/40 font-semibold text-emerald-900'
+                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span>Always Google Play</span>
+                  {settings.store_theme_mode === 'android_only' && <Check className="w-4 h-4 text-play-green" />}
+                </div>
+                <p className="text-[11px] text-gray-500 font-normal">
+                  Show Google Play Store UI to all visitors.
+                </p>
+              </div>
+
+              <div
+                onClick={() => setSettings({ ...settings, store_theme_mode: 'ios_only' })}
+                className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                  settings.store_theme_mode === 'ios_only'
+                    ? 'border-blue-500 bg-blue-50/40 font-semibold text-blue-900'
+                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span>Always Apple App Store</span>
+                  {settings.store_theme_mode === 'ios_only' && <Check className="w-4 h-4 text-blue-600" />}
+                </div>
+                <p className="text-[11px] text-gray-500 font-normal">
+                  Show Apple App Store UI to all visitors.
+                </p>
+              </div>
             </div>
           </div>
         </div>

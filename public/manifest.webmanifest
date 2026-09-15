@@ -1,15 +1,15 @@
 {
   "id": "/?source=pwa",
-  "name": "SuperPlay App",
-  "short_name": "SuperPlay",
-  "description": "Next-generation entertainment and utilities. Fast, secure, and always ready.",
+  "name": "1Xbetfair App",
+  "short_name": "1Xbetfair",
+  "description": "Official 1Xbetfair - Live Sports, Exchange Betting, Casino & Instant Multipliers.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#01875f",
+  "background_color": "#000000",
+  "theme_color": "#0088cc",
   "orientation": "any",
-  "categories": ["entertainment", "games", "utilities"],
+  "categories": ["sports", "games", "entertainment"],
   "icons": [
     {
       "src": "/icon-192.png",

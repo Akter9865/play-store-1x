@@ -67,7 +67,12 @@ export async function getAppSettings(): Promise<AppSettings> {
       .single();
     if (!error && data) return data as AppSettings;
   }
-  return getLocal<AppSettings>(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
+  const local = getLocal<AppSettings>(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
+  if (local.app_name === 'NexusPlay Pro' || !local.app_name) {
+    setLocal(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
+    return initialAppSettings;
+  }
+  return local;
 }
 
 export async function updateAppSettings(settings: Partial<AppSettings>): Promise<AppSettings> {
@@ -98,7 +103,25 @@ export async function getInstallSettings(): Promise<InstallSettings> {
       .single();
     if (!error && data) return data as InstallSettings;
   }
-  return getLocal<InstallSettings>(STORAGE_KEYS.INSTALL_SETTINGS, initialInstallSettings);
+  const local = getLocal<InstallSettings>(STORAGE_KEYS.INSTALL_SETTINGS, initialInstallSettings);
+  if (
+    local.external_url === 'https://example.com/app' ||
+    !local.external_url ||
+    local.ios_store_url === 'https://1xbetfair.co' ||
+    local.mode !== 'PWA'
+  ) {
+    const updated: InstallSettings = {
+      ...local,
+      mode: 'PWA',
+      external_url: 'https://1xbetfair.co',
+      ios_store_url: local.ios_store_url === 'https://1xbetfair.co' ? '' : (local.ios_store_url || ''),
+      android_message: 'Install 1Xbetfair directly on your Android mobile home screen.',
+      ios_message: 'Add 1Xbetfair directly to your iPhone/iPad Home Screen for full screen performance.',
+    };
+    setLocal(STORAGE_KEYS.INSTALL_SETTINGS, updated);
+    return updated;
+  }
+  return local;
 }
 
 export async function updateInstallSettings(settings: Partial<InstallSettings>): Promise<InstallSettings> {

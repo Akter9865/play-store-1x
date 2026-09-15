@@ -13,17 +13,23 @@ export interface BeforeInstallPromptEvent extends Event {
 }
 
 export type ModalFlowType = 
-  | 'install_confirm'       // Desktop/Android general install
+  | 'install_confirm'       // Desktop/general install
   | 'ios_pwa_guide'         // iOS Add to Home Screen step-by-step
+  | 'android_pwa_guide'     // Android Chrome Add to Home Screen step-by-step
   | 'ios_apk_warning'       // Warning that APK is Android-only
   | 'url_redirect_confirm'  // External URL redirect confirmation
   | 'apk_download_started'; // Notification that download started
 
 export type ButtonFlowState = 'idle' | 'initializing' | 'downloading' | 'installing' | 'open';
 
-export function useInstallFlow(installSettings: InstallSettings | null) {
+export function useInstallFlow(installSettings: InstallSettings | null, activePlatformOverride?: 'android' | 'ios') {
   const [device, setDevice] = useState<DeviceInfo>(() => detectDevice());
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(() => {
+    if (typeof window !== 'undefined') {
+      return (window as unknown as { deferredPrompt?: BeforeInstallPromptEvent }).deferredPrompt || null;
+    }
+    return null;
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<ModalFlowType>('install_confirm');
   const [buttonState, setButtonState] = useState<ButtonFlowState>('idle');
@@ -42,21 +48,39 @@ export function useInstallFlow(installSettings: InstallSettings | null) {
     // Check if already in standalone display mode
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true ||
+      new URLSearchParams(window.location.search).get('source') === 'pwa';
 
     if (isStandalone) {
       setIsInstalled(true);
       setButtonState('open');
     }
+
+    // Check if global prompt was captured before mount
+    const globalPrompt = (window as unknown as { deferredPrompt?: BeforeInstallPromptEvent }).deferredPrompt;
+    if (globalPrompt) {
+      setDeferredPrompt(globalPrompt);
+      deferredPromptRef.current = globalPrompt;
+    }
   }, []);
 
-  // Listen for native PWA beforeinstallprompt
+  // Listen for native PWA beforeinstallprompt & appinstalled
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
       const promptEvent = e as BeforeInstallPromptEvent;
+      (window as unknown as { deferredPrompt: BeforeInstallPromptEvent }).deferredPrompt = promptEvent;
       setDeferredPrompt(promptEvent);
       deferredPromptRef.current = promptEvent;
+    };
+
+    const promptAvailableHandler = (e: Event) => {
+      const customEvent = e as CustomEvent<BeforeInstallPromptEvent>;
+      const prompt = customEvent.detail || (window as unknown as { deferredPrompt?: BeforeInstallPromptEvent }).deferredPrompt;
+      if (prompt) {
+        setDeferredPrompt(prompt);
+        deferredPromptRef.current = prompt;
+      }
     };
 
     const installHandler = () => {
@@ -64,15 +88,20 @@ export function useInstallFlow(installSettings: InstallSettings | null) {
       setButtonState('open');
       setDeferredPrompt(null);
       deferredPromptRef.current = null;
+      (window as unknown as { deferredPrompt: BeforeInstallPromptEvent | null }).deferredPrompt = null;
       logAnalyticsEvent('pwa_install_success', detectDevice().deviceType);
     };
 
     window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('pwa-prompt-available', promptAvailableHandler);
     window.addEventListener('appinstalled', installHandler);
+    window.addEventListener('pwa-installed', installHandler);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('pwa-prompt-available', promptAvailableHandler);
       window.removeEventListener('appinstalled', installHandler);
+      window.removeEventListener('pwa-installed', installHandler);
     };
   }, []);
 
@@ -98,7 +127,7 @@ export function useInstallFlow(installSettings: InstallSettings | null) {
   }, [device]);
 
   // Trigger external URL redirect helper
-  const triggerExternalUrl = useCallback((url: string, newTab: boolean) => {
+  const triggerExternalUrl = useCallback((url: string, newTab: boolean = false) => {
     logAnalyticsEvent('external_redirect', device.deviceType, device.browserName);
     if (newTab) {
       window.open(url, '_blank', 'noopener,noreferrer');
@@ -107,16 +136,35 @@ export function useInstallFlow(installSettings: InstallSettings | null) {
     }
   }, [device]);
 
+  // Interactive native PWA prompt trigger
+  const triggerNativePrompt = useCallback(async () => {
+    const promptEvent = deferredPromptRef.current || (window as unknown as { deferredPrompt?: BeforeInstallPromptEvent }).deferredPrompt;
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice.outcome === 'accepted') {
+          setButtonState('open');
+          setIsInstalled(true);
+          setIsModalOpen(false);
+          logAnalyticsEvent('pwa_install_success', device.deviceType);
+        } else {
+          setButtonState('idle');
+        }
+      } catch {
+        setButtonState('idle');
+      }
+    }
+  }, [device]);
+
   // Main CTA Click Action
   const handleInstallClick = useCallback(() => {
     if (!installSettings) return;
 
-    // If already in 'open' state, launch external URL or app
+    // If already in 'open' state, launch target website
     if (buttonState === 'open') {
       if (installSettings.external_url) {
         triggerExternalUrl(installSettings.external_url, installSettings.open_new_tab);
-      } else if (installSettings.apk_url && device.isAndroid) {
-        triggerApkDownload(installSettings.apk_url, installSettings.apk_filename);
       } else {
         window.location.href = '/';
       }
@@ -132,95 +180,22 @@ export function useInstallFlow(installSettings: InstallSettings | null) {
     logAnalyticsEvent('install_button_click', device.deviceType, device.browserName);
 
     const mode = installSettings.mode;
-    const promptEvent = deferredPromptRef.current;
+    const promptEvent = deferredPromptRef.current || (window as unknown as { deferredPrompt?: BeforeInstallPromptEvent }).deferredPrompt;
 
-    // Realistic brief transition (400ms) matching Google Play / crore-games UX
     setTimeout(async () => {
-      // SMART AUTO MODE
-      if (mode === 'SMART') {
-        if (device.isAndroid) {
-          if (installSettings.apk_url) {
-            triggerApkDownload(installSettings.apk_url, installSettings.apk_filename);
-          } else if (promptEvent) {
-            try {
-              await promptEvent.prompt();
-              const choice = await promptEvent.userChoice;
-              if (choice.outcome === 'accepted') {
-                setButtonState('open');
-                logAnalyticsEvent('pwa_install_success', device.deviceType);
-              } else {
-                setButtonState('idle');
-              }
-            } catch (err) {
-              setButtonState('idle');
-            }
-            logAnalyticsEvent('pwa_install_prompt', device.deviceType);
-          } else if (installSettings.external_url) {
-            setButtonState('idle');
-            if (installSettings.confirmation_enabled) {
-              setModalType('url_redirect_confirm');
-              setIsModalOpen(true);
-            } else {
-              triggerExternalUrl(installSettings.external_url, installSettings.open_new_tab);
-            }
-          } else {
-            setButtonState('idle');
-            setModalType('install_confirm');
-            setIsModalOpen(true);
-          }
-          return;
-        }
+      const isIosMode = activePlatformOverride === 'ios' || (!activePlatformOverride && device.isIOS);
 
-        if (device.isIOS) {
-          // iOS Safari: Never download APK directly; show iOS Add to Home Screen step-by-step
-          setButtonState('idle');
-          setModalType('ios_pwa_guide');
-          setIsModalOpen(true);
-          return;
-        }
-
-        // Desktop (Chrome/Edge/Safari on Mac/PC)
-        if (promptEvent) {
-          try {
-            await promptEvent.prompt();
-            const choice = await promptEvent.userChoice;
-            if (choice.outcome === 'accepted') {
-              setButtonState('open');
-              logAnalyticsEvent('pwa_install_success', device.deviceType);
-            } else {
-              setButtonState('idle');
-            }
-          } catch (err) {
-            setButtonState('idle');
-          }
-          logAnalyticsEvent('pwa_install_prompt', device.deviceType);
-        } else if (installSettings.external_url) {
-          setButtonState('idle');
-          if (installSettings.confirmation_enabled) {
-            setModalType('url_redirect_confirm');
-            setIsModalOpen(true);
-          } else {
-            triggerExternalUrl(installSettings.external_url, installSettings.open_new_tab);
-          }
-        } else if (installSettings.apk_url) {
-          triggerApkDownload(installSettings.apk_url, installSettings.apk_filename);
-        } else {
-          setButtonState('idle');
-          setModalType('install_confirm');
-          setIsModalOpen(true);
-        }
+      // 1. iOS VISITOR (iPhone / iPad / Apple Safari / iOS Store View)
+      // User instruction: "আইওএস হলে লিংকটা দিয়ে সাইটে রিডাইরেক্ট হয়ে যাবে ওয়েবসাইটে।"
+      if (isIosMode) {
+        setButtonState('idle');
+        const targetUrl = installSettings.ios_store_url || installSettings.external_url || 'https://1xbetfair.co';
+        triggerExternalUrl(targetUrl, installSettings.open_new_tab);
         return;
       }
 
-      // MODE 1: APK DOWNLOAD
+      // 2. APK DOWNLOAD MODE (Explicitly selected by admin)
       if (mode === 'APK') {
-        if (device.isIOS) {
-          setButtonState('idle');
-          setModalType('ios_apk_warning');
-          setIsModalOpen(true);
-          return;
-        }
-
         if (installSettings.apk_url) {
           triggerApkDownload(installSettings.apk_url, installSettings.apk_filename);
         } else {
@@ -230,55 +205,46 @@ export function useInstallFlow(installSettings: InstallSettings | null) {
         return;
       }
 
-      // MODE 2: EXTERNAL URL
+      // 3. EXTERNAL URL MODE (Explicitly selected by admin)
       if (mode === 'URL') {
         setButtonState('idle');
-        if (!installSettings.external_url) {
-          alert('Destination URL is not configured yet in the admin settings.');
-          return;
-        }
+        const targetUrl = installSettings.external_url || 'https://1xbetfair.co';
         if (installSettings.confirmation_enabled) {
           setModalType('url_redirect_confirm');
           setIsModalOpen(true);
         } else {
-          triggerExternalUrl(installSettings.external_url, installSettings.open_new_tab);
+          triggerExternalUrl(targetUrl, installSettings.open_new_tab);
         }
         return;
       }
 
-      // MODE 3: PWA INSTALL
-      if (mode === 'PWA') {
-        if (device.isIOS) {
-          setButtonState('idle');
-          setModalType('ios_pwa_guide');
-          setIsModalOpen(true);
-          return;
-        }
-
-        if (promptEvent) {
-          try {
-            await promptEvent.prompt();
-            const choice = await promptEvent.userChoice;
-            if (choice.outcome === 'accepted') {
-              setButtonState('open');
-              logAnalyticsEvent('pwa_install_success', device.deviceType);
-            } else {
-              setButtonState('idle');
-            }
-          } catch (err) {
+      // 4. ANDROID & WINDOWS / DESKTOP (PWA INSTALLATION)
+      // User instruction: "অ্যান্ড্রয়েড হলে ইনস্টল হয়ে যাবে, উইন্ডোজ হলে ইনস্টল হয়ে যাবে"
+      if (promptEvent) {
+        try {
+          await promptEvent.prompt();
+          const choice = await promptEvent.userChoice;
+          if (choice.outcome === 'accepted') {
+            setButtonState('open');
+            setIsInstalled(true);
+            logAnalyticsEvent('pwa_install_success', device.deviceType);
+          } else {
             setButtonState('idle');
           }
-          logAnalyticsEvent('pwa_install_prompt', device.deviceType);
-        } else {
+        } catch {
           setButtonState('idle');
-          // If promptEvent not available, fallback to install confirmation
-          setModalType('install_confirm');
-          setIsModalOpen(true);
         }
+        logAnalyticsEvent('pwa_install_prompt', device.deviceType);
         return;
       }
-    }, 400);
-  }, [installSettings, device, buttonState, triggerApkDownload, triggerExternalUrl]);
+
+      // If promptEvent is not ready yet on Android / Windows:
+      // Show Android/Windows PWA Installation Guide modal with step-by-step instructions
+      setButtonState('idle');
+      setModalType('android_pwa_guide');
+      setIsModalOpen(true);
+    }, 350);
+  }, [installSettings, device, buttonState, activePlatformOverride, triggerApkDownload, triggerExternalUrl]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
@@ -292,9 +258,10 @@ export function useInstallFlow(installSettings: InstallSettings | null) {
     isInstalled,
     isDownloading: buttonState === 'downloading',
     handleInstallClick,
+    triggerNativePrompt,
     closeModal,
     triggerExternalUrl,
     triggerApkDownload,
-    hasNativePwaPrompt: Boolean(deferredPrompt),
+    hasNativePwaPrompt: Boolean(deferredPrompt || (typeof window !== 'undefined' && (window as unknown as { deferredPrompt?: BeforeInstallPromptEvent }).deferredPrompt)),
   };
 }

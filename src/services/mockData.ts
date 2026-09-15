@@ -12,46 +12,46 @@ import {
 
 export const initialAppSettings: AppSettings = {
   id: '00000000-0000-0000-0000-000000000001',
-  app_name: 'NexusPlay Pro',
-  developer_name: 'NexusPlay Global Limited',
-  short_description: 'Next-generation entertainment, fluid utilities, and real-time interactive experiences.',
-  description: `Experience the future of digital entertainment and daily utilities in one fast, beautifully crafted app.
+  app_name: '1Xbetfair',
+  developer_name: '1Xbetfair Official Limited',
+  short_description: 'Live Sports, Exchange Betting, Casino & Instant Multipliers.',
+  description: `Experience the official 1Xbetfair application with instant live sports odds, exchange markets, and fast withdrawals.
 
-Built with an ultra-responsive interface, NexusPlay Pro gives you instant access to interactive media, customizable workspaces, dynamic themes, and lightning-fast syncing across all your devices.
+Built with an ultra-responsive interface, 1Xbetfair gives you real-time access to live match feeds, higher multipliers, instant verification, and 24/7 dedicated customer assistance.
 
 Key Features & Highlights:
 • Instant App Launch: Optimized cold-starts with zero stutter or lag.
-• Fluid Touch Gestures: Natural swipe carousels and haptic feedback.
-• Modern Dark & Light Themes: Designed for battery saving and eye comfort.
-• Bank-Grade Data Privacy: Encrypted data channels with granular permission controls.
-• Universal Compatibility: Smoothly runs on Android, iOS Safari, and Desktop workstations.
-• Weekly Feature Drops: Regularly enhanced with community-requested tools.`,
+• Live Sports & Exchange: Real-time dynamic odds and high-speed in-play updates.
+• Secure Fast Withdrawals: Quick, verified payouts directly to your account.
+• Bank-Grade Data Privacy: Encrypted SSL data channels with high-grade security.
+• Universal Compatibility: Smoothly runs as standalone PWA on Android, iOS Safari, and Desktop.
+• Regular Updates: Continuously updated for stability, security, and peak performance.`,
   features: [
-    'Blazing fast performance with zero lag',
-    'Intuitive gesture controls and custom themes',
-    'Comprehensive safety and privacy controls',
-    'Regular weekly updates and feature enhancements',
-    'Ultra-low battery and memory consumption',
+    'Real-time live sports odds and exchange markets',
+    'Instant, secure withdrawal verification',
+    'Bank-grade SSL data encryption and privacy',
+    'Fluid PWA standalone performance across all devices',
+    '24/7 live dedicated customer support',
   ],
-  category: 'Entertainment & Utilities',
-  rating: 4.7,
-  review_count: '8.3K reviews',
-  download_count: '100K+ downloads',
+  category: 'Sports & Entertainment',
+  rating: 4.9,
+  review_count: '18.4K reviews',
+  download_count: '500K+ downloads',
   age_rating: '18+',
-  version: '2.4.1',
-  last_updated: '14 September 2026',
-  icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=256&auto=format&fit=crop&q=80',
-  banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
+  version: '3.1.0',
+  last_updated: 'Today',
+  icon_url: '/1xbetfair-icon.png',
+  banner_url: '/1xbetfair-icon.png',
   verified: true,
   editors_choice: true,
-  site_name: 'AppMarket',
-  site_logo_url: '',
-  site_badge_text: 'Verified',
+  site_name: '1Xbetfair',
+  site_logo_url: '/1xbetfair-icon.png',
+  site_badge_text: 'Verified 1X',
   show_site_badge: true,
-  pwa_name: 'SuperPlay App',
-  pwa_short_name: 'SuperPlay',
-  pwa_theme_color: '#01875f',
-  pwa_background_color: '#ffffff',
+  pwa_name: '1Xbetfair App',
+  pwa_short_name: '1Xbetfair',
+  pwa_theme_color: '#0088cc',
+  pwa_background_color: '#000000',
   icon_192_url: '/icon-192.png',
   icon_512_url: '/icon-512.png',
   apple_touch_icon_url: '/apple-touch-icon.png',
@@ -60,22 +60,25 @@ Key Features & Highlights:
 
 export const initialInstallSettings: InstallSettings = {
   id: '00000000-0000-0000-0000-000000000002',
-  mode: 'SMART',
-  apk_url: 'https://github.com/nexusplay/downloads/releases/download/v2.4.1/nexusplay-pro-v2.4.1.apk',
-  apk_filename: 'nexusplay-pro-v2.4.1.apk',
-  apk_size_bytes: 24650000, // ~24.6 MB
-  external_url: 'https://example.com/app',
+  mode: 'PWA',
+  apk_url: '',
+  apk_filename: '1xbetfair-release.apk',
+  apk_size_bytes: 28400000,
+  external_url: 'https://1xbetfair.co',
+  ios_store_url: '',
+  ios_button_text: 'GET',
+  store_theme_mode: 'auto',
   open_new_tab: true,
-  confirmation_enabled: true,
+  confirmation_enabled: false,
   button_text: 'Install',
   initializing_text: 'Initializing...',
   downloading_text: 'Downloading...',
   installing_text: 'Installing...',
   open_text: 'Open',
-  success_message: 'Download initiated. Please check your notification bar or browser downloads.',
-  android_message: 'Download the verified Android APK directly to your phone or tablet.',
-  ios_message: 'Add this web application directly to your iPhone/iPad Home Screen in 3 easy steps.',
-  desktop_message: 'Install this application in a dedicated window on your Mac or PC.',
+  success_message: 'Installation initiated for 1Xbetfair.',
+  android_message: 'Install 1Xbetfair directly on your Android mobile home screen.',
+  ios_message: 'Add 1Xbetfair directly to your iPhone/iPad Home Screen for full screen performance.',
+  desktop_message: 'Install 1Xbetfair as a standalone desktop app on your PC or Mac.',
 };
 
 export const initialMediaItems: MediaItem[] = [
@@ -287,6 +290,34 @@ export const initialAnalyticsEvents: AnalyticsEvent[] = [
 
 export const initialGeneratedApps: GeneratedApp[] = [
   {
+    id: '00000000-0000-0000-0000-000000000100',
+    app_id: '1xbetfair',
+    app_name: '1Xbetfair',
+    short_name: '1Xbetfair',
+    target_url: 'https://1xbetfair.co',
+    icon_url: '/1xbetfair-icon.png',
+    icon_192_url: '/icon-192.png',
+    icon_512_url: '/icon-512.png',
+    apple_touch_icon_url: '/apple-touch-icon.png',
+    favicon_url: '/favicon.png',
+    theme_color: '#0088cc',
+    background_color: '#000000',
+    category: 'Sports & Entertainment',
+    rating: 4.9,
+    review_count: '18.4K reviews',
+    download_count: '500K+ downloads',
+    version: '3.1.0',
+    short_description: 'Official 1Xbetfair - Sports, Live Exchange, Slots & Instant Verification.',
+    description: '1Xbetfair delivers premier live sports betting, exchange markets, top multiplier games, and instant withdrawals. Enjoy fast, secure mobile gaming on any device.',
+    display_mode: 'standalone',
+    embed_mode: 'iframe_seamless',
+    button_text: 'Install',
+    ios_button_text: 'GET',
+    ios_url: '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
     id: '00000000-0000-0000-0000-000000000101',
     app_id: 'crore-bet',
     app_name: 'Crore Bet',
@@ -309,6 +340,8 @@ export const initialGeneratedApps: GeneratedApp[] = [
     display_mode: 'standalone',
     embed_mode: 'iframe_seamless',
     button_text: 'Install',
+    ios_button_text: 'GET',
+    ios_url: 'https://crore-games.com/?__hbus=10',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -337,6 +370,8 @@ export const initialGeneratedApps: GeneratedApp[] = [
     display_mode: 'standalone',
     embed_mode: 'iframe_seamless',
     button_text: 'Install',
+    ios_button_text: 'GET',
+    ios_url: 'https://apps.apple.com/app/id1234567890',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },

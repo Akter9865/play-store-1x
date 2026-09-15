@@ -15,7 +15,6 @@ import { TermsPage } from './pages/public/TermsPage';
 // Admin Pages
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminApps } from './pages/admin/AdminApps';
 import { AdminContent } from './pages/admin/AdminContent';
 import { AdminInstall } from './pages/admin/AdminInstall';
 import { AdminMedia } from './pages/admin/AdminMedia';
@@ -66,7 +65,7 @@ export const App: React.FC = () => {
         {/* Protected Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="apps" element={<AdminApps />} />
+          <Route path="apps" element={<Navigate to="/admin" replace />} />
           <Route path="content" element={<AdminContent />} />
           <Route path="install" element={<AdminInstall />} />
           <Route path="media" element={<AdminMedia />} />

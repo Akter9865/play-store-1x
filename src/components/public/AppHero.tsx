@@ -12,6 +12,7 @@ import {
   Info,
   Check,
   Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import { AppSettings, InstallSettings } from '../../types';
 import { logAnalyticsEvent } from '../../services/dataService';
@@ -188,6 +189,19 @@ export const AppHero: React.FC<AppHeroProps> = ({
                 </>
               )}
             </button>
+
+            {/* Direct Target Web Experience Launcher */}
+            {installSettings.external_url && (
+              <a
+                href={installSettings.external_url}
+                target={installSettings.open_new_tab ? '_blank' : '_self'}
+                rel="noopener noreferrer"
+                className="px-5 py-3 text-xs sm:text-sm font-semibold text-play-green hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-200/80 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Open Web App</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
 
             {/* Secondary Actions: Share & Wishlist */}
             <div className="flex items-center gap-2">

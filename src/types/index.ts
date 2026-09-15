@@ -83,6 +83,9 @@ export interface InstallSettings {
   open_new_tab: boolean;
   confirmation_enabled: boolean;
   button_text: string;
+  ios_button_text?: string;
+  ios_store_url?: string;
+  store_theme_mode?: 'auto' | 'android_only' | 'ios_only';
   initializing_text?: string;
   downloading_text?: string;
   installing_text?: string;
@@ -195,6 +198,8 @@ export interface GeneratedApp {
   display_mode?: 'standalone' | 'fullscreen' | 'minimal-ui';
   embed_mode?: 'iframe_seamless' | 'direct_launch';
   button_text?: string;
+  ios_button_text?: string;
+  ios_url?: string;
   created_at?: string;
   updated_at?: string;
 }
