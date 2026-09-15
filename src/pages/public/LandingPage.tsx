@@ -11,11 +11,17 @@ import {
 } from '../../types';
 import {
   getInstallSettings,
+  getInstallSettingsSync,
   getMediaItems,
+  getMediaItemsSync,
   getReviews,
+  getReviewsSync,
   getReleaseNotes,
+  getReleaseNotesSync,
   getDeveloperSettings,
+  getDeveloperSettingsSync,
   getPrivacySettings,
+  getPrivacySettingsSync,
 } from '../../services/dataService';
 import { useInstallFlow } from '../../hooks/useInstallFlow';
 import { useDynamicPwa } from '../../hooks/useDynamicPwa';
@@ -36,13 +42,12 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
-  const [installSettings, setInstallSettings] = useState<InstallSettings | null>(null);
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [releaseNotes, setReleaseNotes] = useState<ReleaseNote[]>([]);
-  const [developerSettings, setDeveloperSettings] = useState<DeveloperSettings | null>(null);
-  const [privacySettings, setPrivacySettings] = useState<PrivacySettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [installSettings, setInstallSettings] = useState<InstallSettings>(() => getInstallSettingsSync());
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>(() => getMediaItemsSync());
+  const [reviews, setReviews] = useState<Review[]>(() => getReviewsSync(true));
+  const [releaseNotes, setReleaseNotes] = useState<ReleaseNote[]>(() => getReleaseNotesSync(true));
+  const [developerSettings, setDeveloperSettings] = useState<DeveloperSettings>(() => getDeveloperSettingsSync());
+  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(() => getPrivacySettingsSync());
 
   // Standalone PWA display state
   const [showInAppViewer, setShowInAppViewer] = useState(false);
@@ -70,8 +75,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
         setPrivacySettings(privacy);
       } catch (err) {
         console.error('Error loading landing page data:', err);
-      } finally {
-        setIsLoading(false);
       }
     }
     loadData();
@@ -110,15 +113,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
   }, []);
 
   const currentPlatform = activePlatform ?? (device.isIOS ? 'ios' : 'android');
-
-  if (isLoading || !installSettings) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-        <div className="w-10 h-10 border-3 border-play-green border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs text-gray-500 font-medium">Loading app listing...</p>
-      </div>
-    );
-  }
 
   const targetAppUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '' && !installSettings.external_url.includes('1xbetfair.co'))
     ? installSettings.external_url

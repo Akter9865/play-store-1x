@@ -1,9 +1,10 @@
 // Service Worker for Dynamic Multi-App PWA Platform
-const CACHE_NAME = 'play-pwa-v3';
+const CACHE_NAME = 'play-pwa-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
+  '/1xbetfair-icon.png',
   '/icon-192.png',
   '/icon-512.png',
   '/apple-touch-icon.png',
@@ -42,11 +43,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Navigation requests: support SPA deep routing for generated apps (/app/:appId)
+  // 2. Navigation requests: fast stale-while-revalidate for instant 0ms page loads
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/index.html');
+      caches.match('/index.html').then((cached) => {
+        const fetchPromise = fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', clone));
+            }
+            return networkResponse;
+          })
+          .catch(() => cached || caches.match('/index.html'));
+
+        return cached || fetchPromise;
       })
     );
     return;

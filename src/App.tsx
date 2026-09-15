@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppSettings } from './types';
-import { getAppSettings } from './services/dataService';
+import { getAppSettings, getAppSettingsSync } from './services/dataService';
 import { PublicLayout } from './layouts/PublicLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 
@@ -22,7 +22,7 @@ import { AdminReviews } from './pages/admin/AdminReviews';
 import { AdminSettings } from './pages/admin/AdminSettings';
 
 export const App: React.FC = () => {
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => getAppSettingsSync());
 
   useEffect(() => {
     async function load() {
@@ -35,14 +35,6 @@ export const App: React.FC = () => {
     }
     load();
   }, []);
-
-  if (!appSettings) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-10 h-10 border-3 border-play-green border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <BrowserRouter>

@@ -17,7 +17,7 @@ import {
   Info,
 } from 'lucide-react';
 import { GeneratedApp, AppSettings, InstallSettings } from '../../types';
-import { getGeneratedApp, logAnalyticsEvent } from '../../services/dataService';
+import { getGeneratedApp, getGeneratedAppSync, logAnalyticsEvent } from '../../services/dataService';
 import { useDynamicPwa } from '../../hooks/useDynamicPwa';
 import { detectDevice, DeviceInfo } from '../../utils/deviceDetector';
 import { IosAppStoreView } from '../../components/public/IosAppStoreView';
@@ -33,8 +33,11 @@ interface BeforeInstallPromptEvent extends Event {
 
 export const GeneratedAppPage: React.FC = () => {
   const { appId } = useParams<{ appId: string }>();
-  const [app, setApp] = useState<GeneratedApp | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [app, setApp] = useState<GeneratedApp | null>(() => {
+    if (appId) return getGeneratedAppSync(appId);
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(!app);
   const [device, setDevice] = useState<DeviceInfo>(() => detectDevice());
   const [platform, setPlatform] = useState<'android' | 'ios'>(() => {
     if (typeof window === 'undefined') return 'android';

@@ -55,23 +55,118 @@ function setLocal<T>(key: string, val: T): void {
   }
 }
 
+// In-memory cache for ultra-fast response times & zero network lag
+interface CacheItem<T> {
+  data: T;
+  timestamp: number;
+}
+const MEMORY_CACHE = new Map<string, CacheItem<unknown>>();
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+function getCached<T>(key: string): T | null {
+  const item = MEMORY_CACHE.get(key);
+  if (item && (Date.now() - item.timestamp < CACHE_TTL_MS)) {
+    return item.data as T;
+  }
+  return null;
+}
+
+function setCached<T>(key: string, data: T): void {
+  MEMORY_CACHE.set(key, { data, timestamp: Date.now() });
+}
+
+export function clearDataCache(): void {
+  MEMORY_CACHE.clear();
+}
+
+// Synchronous fast getters for instant 0ms initial render
+export function getAppSettingsSync(): AppSettings {
+  const cached = getCached<AppSettings>('app_settings');
+  if (cached) return cached;
+  const local = getLocal<AppSettings>(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
+  if (local.app_name === 'NexusPlay Pro' || !local.app_name) {
+    setLocal(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
+    return initialAppSettings;
+  }
+  return local;
+}
+
+export function getInstallSettingsSync(): InstallSettings {
+  const cached = getCached<InstallSettings>('install_settings');
+  if (cached) return cached;
+  const local = getLocal<InstallSettings>(STORAGE_KEYS.INSTALL_SETTINGS, initialInstallSettings);
+  const updated: InstallSettings = {
+    ...local,
+    mode: 'PWA',
+    external_url: (local.external_url && local.external_url.trim() !== '' && !local.external_url.includes('1xbetfair.co') && !local.external_url.includes('example.com')) ? local.external_url : 'https://1xbetfair.me',
+    ios_store_url: (local.ios_store_url && !local.ios_store_url.includes('1xbetfair.co')) ? local.ios_store_url : 'https://1xbetfair.me',
+    android_message: 'Install 1Xbetfair directly on your Android mobile home screen.',
+    ios_message: 'Add 1Xbetfair directly to your iPhone/iPad Home Screen for full screen performance.',
+  };
+  return updated;
+}
+
+export function getMediaItemsSync(): MediaItem[] {
+  const cached = getCached<MediaItem[]>('media_items');
+  if (cached) return cached;
+  return getLocal<MediaItem[]>(STORAGE_KEYS.MEDIA, initialMediaItems);
+}
+
+export function getReviewsSync(publishedOnly: boolean = false): Review[] {
+  const cached = getCached<Review[]>(publishedOnly ? 'reviews_pub' : 'reviews_all');
+  if (cached) return cached;
+  const all = getLocal<Review[]>(STORAGE_KEYS.REVIEWS, initialReviews);
+  return publishedOnly ? all.filter((r) => r.published) : all;
+}
+
+export function getReleaseNotesSync(publishedOnly: boolean = true): ReleaseNote[] {
+  const cached = getCached<ReleaseNote[]>(publishedOnly ? 'release_pub' : 'release_all');
+  if (cached) return cached;
+  const all = getLocal<ReleaseNote[]>(STORAGE_KEYS.RELEASE_NOTES, initialReleaseNotes);
+  return publishedOnly ? all.filter((r) => r.published) : all;
+}
+
+export function getDeveloperSettingsSync(): DeveloperSettings {
+  const cached = getCached<DeveloperSettings>('dev_settings');
+  if (cached) return cached;
+  return getLocal<DeveloperSettings>(STORAGE_KEYS.DEVELOPER_SETTINGS, initialDeveloperSettings);
+}
+
+export function getPrivacySettingsSync(): PrivacySettings {
+  const cached = getCached<PrivacySettings>('privacy_settings');
+  if (cached) return cached;
+  return getLocal<PrivacySettings>(STORAGE_KEYS.PRIVACY_SETTINGS, initialPrivacySettings);
+}
+
+export function getGeneratedAppSync(appId: string): GeneratedApp | null {
+  const cleanId = appId.toLowerCase().trim();
+  const cached = getCached<GeneratedApp>(`gen_app_${cleanId}`);
+  if (cached) return cached;
+  const apps = getLocal<GeneratedApp[]>(STORAGE_KEYS.GENERATED_APPS, initialGeneratedApps);
+  return apps.find((a) => a.app_id.toLowerCase() === cleanId || a.id === cleanId) || null;
+}
+
 // ----------------------------------------------------
 // APP SETTINGS
 // ----------------------------------------------------
 export async function getAppSettings(): Promise<AppSettings> {
+  const cached = getCached<AppSettings>('app_settings');
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('app_settings')
       .select('*')
       .limit(1)
       .single();
-    if (!error && data) return data as AppSettings;
+    if (!error && data) {
+      setCached('app_settings', data as AppSettings);
+      setLocal(STORAGE_KEYS.APP_SETTINGS, data);
+      return data as AppSettings;
+    }
   }
-  const local = getLocal<AppSettings>(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
-  if (local.app_name === 'NexusPlay Pro' || !local.app_name) {
-    setLocal(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
-    return initialAppSettings;
-  }
+  const local = getAppSettingsSync();
+  setCached('app_settings', local);
   return local;
 }
 
@@ -87,6 +182,7 @@ export async function updateAppSettings(settings: Partial<AppSettings>): Promise
     if (error) console.error('Error updating app_settings:', error);
   }
 
+  clearDataCache();
   setLocal(STORAGE_KEYS.APP_SETTINGS, updated);
   return updated;
 }
@@ -95,6 +191,9 @@ export async function updateAppSettings(settings: Partial<AppSettings>): Promise
 // INSTALL SETTINGS
 // ----------------------------------------------------
 export async function getInstallSettings(): Promise<InstallSettings> {
+  const cached = getCached<InstallSettings>('install_settings');
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('install_settings')
@@ -112,20 +211,14 @@ export async function getInstallSettings(): Promise<InstallSettings> {
         apk_url: isOldApk ? 'https://1xbetfair.me/downloads/app-release.apk' : data.apk_url,
         mode: 'PWA',
       };
+      setCached('install_settings', sanitized);
+      setLocal(STORAGE_KEYS.INSTALL_SETTINGS, sanitized);
       return sanitized;
     }
   }
-  const local = getLocal<InstallSettings>(STORAGE_KEYS.INSTALL_SETTINGS, initialInstallSettings);
-  const updated: InstallSettings = {
-    ...local,
-    mode: 'PWA',
-    external_url: (local.external_url && local.external_url.trim() !== '' && !local.external_url.includes('1xbetfair.co') && !local.external_url.includes('example.com')) ? local.external_url : 'https://1xbetfair.me',
-    ios_store_url: (local.ios_store_url && !local.ios_store_url.includes('1xbetfair.co')) ? local.ios_store_url : 'https://1xbetfair.me',
-    android_message: 'Install 1Xbetfair directly on your Android mobile home screen.',
-    ios_message: 'Add 1Xbetfair directly to your iPhone/iPad Home Screen for full screen performance.',
-  };
-  setLocal(STORAGE_KEYS.INSTALL_SETTINGS, updated);
-  return updated;
+  const local = getInstallSettingsSync();
+  setCached('install_settings', local);
+  return local;
 }
 
 export async function updateInstallSettings(settings: Partial<InstallSettings>): Promise<InstallSettings> {
@@ -140,6 +233,7 @@ export async function updateInstallSettings(settings: Partial<InstallSettings>):
     if (error) console.error('Error updating install_settings:', error);
   }
 
+  clearDataCache();
   setLocal(STORAGE_KEYS.INSTALL_SETTINGS, updated);
   return updated;
 }
@@ -148,14 +242,23 @@ export async function updateInstallSettings(settings: Partial<InstallSettings>):
 // MEDIA ITEMS
 // ----------------------------------------------------
 export async function getMediaItems(): Promise<MediaItem[]> {
+  const cached = getCached<MediaItem[]>('media_items');
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('media')
       .select('*')
       .order('sort_order', { ascending: true });
-    if (!error && data) return data as MediaItem[];
+    if (!error && data && data.length > 0) {
+      setCached('media_items', data as MediaItem[]);
+      setLocal(STORAGE_KEYS.MEDIA, data);
+      return data as MediaItem[];
+    }
   }
-  return getLocal<MediaItem[]>(STORAGE_KEYS.MEDIA, initialMediaItems);
+  const local = getMediaItemsSync();
+  setCached('media_items', local);
+  return local;
 }
 
 export async function saveMediaItem(item: Partial<MediaItem>): Promise<MediaItem> {
@@ -214,6 +317,7 @@ export async function saveMediaItem(item: Partial<MediaItem>): Promise<MediaItem
     setLocal(STORAGE_KEYS.MEDIA, newItems);
   }
 
+  clearDataCache();
   return result;
 }
 
@@ -225,6 +329,7 @@ export async function deleteMediaItem(id: string): Promise<void> {
   if (isSupabaseConfigured && supabase) {
     await supabase.from('media').delete().eq('id', id);
   }
+  clearDataCache();
 }
 
 export async function reorderMediaItems(newOrderedItems: MediaItem[]): Promise<void> {
@@ -239,22 +344,32 @@ export async function reorderMediaItems(newOrderedItems: MediaItem[]): Promise<v
       await supabase.from('media').update({ sort_order: item.sort_order }).eq('id', item.id);
     }
   }
+  clearDataCache();
 }
 
 // ----------------------------------------------------
 // REVIEWS
 // ----------------------------------------------------
 export async function getReviews(publishedOnly: boolean = false): Promise<Review[]> {
+  const cacheKey = publishedOnly ? 'reviews_pub' : 'reviews_all';
+  const cached = getCached<Review[]>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     let query = supabase.from('reviews').select('*').order('sort_order', { ascending: true });
     if (publishedOnly) {
       query = query.eq('published', true);
     }
     const { data, error } = await query;
-    if (!error && data) return data as Review[];
+    if (!error && data && data.length > 0) {
+      setCached(cacheKey, data as Review[]);
+      setLocal(STORAGE_KEYS.REVIEWS, data);
+      return data as Review[];
+    }
   }
-  const all = getLocal<Review[]>(STORAGE_KEYS.REVIEWS, initialReviews);
-  return publishedOnly ? all.filter((r) => r.published) : all;
+  const local = getReviewsSync(publishedOnly);
+  setCached(cacheKey, local);
+  return local;
 }
 
 export async function saveReview(review: Partial<Review>): Promise<Review> {
@@ -323,6 +438,7 @@ export async function saveReview(review: Partial<Review>): Promise<Review> {
     setLocal(STORAGE_KEYS.REVIEWS, updated);
   }
 
+  clearDataCache();
   return result;
 }
 
@@ -334,6 +450,7 @@ export async function deleteReview(id: string): Promise<void> {
   if (isSupabaseConfigured && supabase) {
     await supabase.from('reviews').delete().eq('id', id);
   }
+  clearDataCache();
 }
 
 export async function voteHelpfulReview(id: string, increment: boolean = true): Promise<number> {
@@ -348,6 +465,7 @@ export async function voteHelpfulReview(id: string, increment: boolean = true): 
   if (isSupabaseConfigured && supabase) {
     await supabase.from('reviews').update({ helpful_count: newCount }).eq('id', id);
   }
+  clearDataCache();
   return newCount;
 }
 
@@ -355,16 +473,25 @@ export async function voteHelpfulReview(id: string, increment: boolean = true): 
 // RELEASE NOTES (WHAT'S NEW)
 // ----------------------------------------------------
 export async function getReleaseNotes(publishedOnly: boolean = true): Promise<ReleaseNote[]> {
+  const cacheKey = publishedOnly ? 'release_pub' : 'release_all';
+  const cached = getCached<ReleaseNote[]>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     let query = supabase.from('release_notes').select('*').order('created_at', { ascending: false });
     if (publishedOnly) {
       query = query.eq('published', true);
     }
     const { data, error } = await query;
-    if (!error && data) return data as ReleaseNote[];
+    if (!error && data && data.length > 0) {
+      setCached(cacheKey, data as ReleaseNote[]);
+      setLocal(STORAGE_KEYS.RELEASE_NOTES, data);
+      return data as ReleaseNote[];
+    }
   }
-  const all = getLocal<ReleaseNote[]>(STORAGE_KEYS.RELEASE_NOTES, initialReleaseNotes);
-  return publishedOnly ? all.filter((r) => r.published) : all;
+  const local = getReleaseNotesSync(publishedOnly);
+  setCached(cacheKey, local);
+  return local;
 }
 
 export async function saveReleaseNote(note: Partial<ReleaseNote>): Promise<ReleaseNote> {
@@ -417,6 +544,7 @@ export async function saveReleaseNote(note: Partial<ReleaseNote>): Promise<Relea
     setLocal(STORAGE_KEYS.RELEASE_NOTES, updated);
   }
 
+  clearDataCache();
   return result;
 }
 
@@ -428,21 +556,31 @@ export async function deleteReleaseNote(id: string): Promise<void> {
   if (isSupabaseConfigured && supabase) {
     await supabase.from('release_notes').delete().eq('id', id);
   }
+  clearDataCache();
 }
 
 // ----------------------------------------------------
 // DEVELOPER SETTINGS
 // ----------------------------------------------------
 export async function getDeveloperSettings(): Promise<DeveloperSettings> {
+  const cached = getCached<DeveloperSettings>('dev_settings');
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('developer_settings')
       .select('*')
       .limit(1)
       .single();
-    if (!error && data) return data as DeveloperSettings;
+    if (!error && data) {
+      setCached('dev_settings', data as DeveloperSettings);
+      setLocal(STORAGE_KEYS.DEVELOPER_SETTINGS, data);
+      return data as DeveloperSettings;
+    }
   }
-  return getLocal<DeveloperSettings>(STORAGE_KEYS.DEVELOPER_SETTINGS, initialDeveloperSettings);
+  const local = getDeveloperSettingsSync();
+  setCached('dev_settings', local);
+  return local;
 }
 
 export async function updateDeveloperSettings(settings: Partial<DeveloperSettings>): Promise<DeveloperSettings> {
@@ -453,6 +591,7 @@ export async function updateDeveloperSettings(settings: Partial<DeveloperSetting
     await supabase.from('developer_settings').update(updated).eq('id', updated.id);
   }
 
+  clearDataCache();
   setLocal(STORAGE_KEYS.DEVELOPER_SETTINGS, updated);
   return updated;
 }
@@ -461,15 +600,24 @@ export async function updateDeveloperSettings(settings: Partial<DeveloperSetting
 // PRIVACY SETTINGS
 // ----------------------------------------------------
 export async function getPrivacySettings(): Promise<PrivacySettings> {
+  const cached = getCached<PrivacySettings>('privacy_settings');
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('privacy_settings')
       .select('*')
       .limit(1)
       .single();
-    if (!error && data) return data as PrivacySettings;
+    if (!error && data) {
+      setCached('privacy_settings', data as PrivacySettings);
+      setLocal(STORAGE_KEYS.PRIVACY_SETTINGS, data);
+      return data as PrivacySettings;
+    }
   }
-  return getLocal<PrivacySettings>(STORAGE_KEYS.PRIVACY_SETTINGS, initialPrivacySettings);
+  const local = getPrivacySettingsSync();
+  setCached('privacy_settings', local);
+  return local;
 }
 
 export async function updatePrivacySettings(settings: Partial<PrivacySettings>): Promise<PrivacySettings> {
@@ -480,6 +628,7 @@ export async function updatePrivacySettings(settings: Partial<PrivacySettings>):
     await supabase.from('privacy_settings').update(updated).eq('id', updated.id);
   }
 
+  clearDataCache();
   setLocal(STORAGE_KEYS.PRIVACY_SETTINGS, updated);
   return updated;
 }
@@ -605,18 +754,30 @@ export async function uploadFile(
 // GENERATED APPS (Multi-App PWA Platform)
 // ----------------------------------------------------
 export async function getGeneratedApps(): Promise<GeneratedApp[]> {
+  const cached = getCached<GeneratedApp[]>('generated_apps');
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('generated_apps')
       .select('*')
       .order('created_at', { ascending: false });
-    if (!error && data && data.length > 0) return data as GeneratedApp[];
+    if (!error && data && data.length > 0) {
+      setCached('generated_apps', data as GeneratedApp[]);
+      setLocal(STORAGE_KEYS.GENERATED_APPS, data);
+      return data as GeneratedApp[];
+    }
   }
-  return getLocal<GeneratedApp[]>(STORAGE_KEYS.GENERATED_APPS, initialGeneratedApps);
+  const local = getLocal<GeneratedApp[]>(STORAGE_KEYS.GENERATED_APPS, initialGeneratedApps);
+  setCached('generated_apps', local);
+  return local;
 }
 
 export async function getGeneratedApp(appId: string): Promise<GeneratedApp | null> {
   const cleanId = appId.toLowerCase().trim();
+  const cached = getCached<GeneratedApp>(`gen_app_${cleanId}`);
+  if (cached) return cached;
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('generated_apps')
@@ -624,11 +785,15 @@ export async function getGeneratedApp(appId: string): Promise<GeneratedApp | nul
       .eq('app_id', cleanId)
       .limit(1)
       .single();
-    if (!error && data) return data as GeneratedApp;
+    if (!error && data) {
+      setCached(`gen_app_${cleanId}`, data as GeneratedApp);
+      return data as GeneratedApp;
+    }
   }
 
-  const apps = await getGeneratedApps();
-  return apps.find((a) => a.app_id.toLowerCase() === cleanId || a.id === cleanId) || null;
+  const local = getGeneratedAppSync(appId);
+  if (local) setCached(`gen_app_${cleanId}`, local);
+  return local;
 }
 
 export async function saveGeneratedApp(app: Partial<GeneratedApp>): Promise<GeneratedApp> {
@@ -703,6 +868,7 @@ export async function saveGeneratedApp(app: Partial<GeneratedApp>): Promise<Gene
     setLocal(STORAGE_KEYS.GENERATED_APPS, [result, ...apps]);
   }
 
+  clearDataCache();
   return result;
 }
 
@@ -721,6 +887,7 @@ export async function deleteGeneratedApp(id: string): Promise<boolean> {
       return false;
     }
   }
+  clearDataCache();
   return true;
 }
 
