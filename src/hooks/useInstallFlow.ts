@@ -148,9 +148,9 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
           setIsInstalled(true);
           setIsModalOpen(false);
           logAnalyticsEvent('pwa_install_success', device.deviceType);
-          const targetUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '')
+          const targetUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '' && !installSettings.external_url.includes('1xbetfair.co'))
             ? installSettings.external_url
-            : 'https://1xbetfair.co';
+            : 'https://1xbetfair.me';
           setTimeout(() => {
             window.location.href = targetUrl;
           }, 600);
@@ -167,9 +167,9 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
   const handleInstallClick = useCallback(() => {
     if (!installSettings) return;
 
-    const targetUrl = (installSettings.external_url && installSettings.external_url.trim() !== '')
+    const targetUrl = (installSettings.external_url && installSettings.external_url.trim() !== '' && !installSettings.external_url.includes('1xbetfair.co'))
       ? installSettings.external_url
-      : 'https://1xbetfair.co';
+      : 'https://1xbetfair.me';
 
     // If already in 'open' state, launch target website
     if (buttonState === 'open') {

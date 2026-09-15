@@ -1,5 +1,5 @@
 // Service Worker for Dynamic Multi-App PWA Platform
-const CACHE_NAME = 'play-pwa-v2';
+const CACHE_NAME = 'play-pwa-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

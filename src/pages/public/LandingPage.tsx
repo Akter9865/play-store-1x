@@ -120,9 +120,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
     );
   }
 
-  const targetAppUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '')
+  const targetAppUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '' && !installSettings.external_url.includes('1xbetfair.co'))
     ? installSettings.external_url
-    : 'https://1xbetfair.co';
+    : 'https://1xbetfair.me';
 
   // =========================================================================
   // VIEW MODE: IN-APP TARGET WEBSITE (When launched from PWA Home Screen icon)

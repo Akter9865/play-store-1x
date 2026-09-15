@@ -164,7 +164,9 @@ export const GeneratedAppPage: React.FC = () => {
       // 1. iOS visitor flow: Redirect directly to the website
       if (device.isIOS || platform === 'ios') {
         setButtonState('idle');
-        const targetUrl = app.target_url || app.ios_url || 'https://1xbetfair.co';
+        const targetUrl = (app.target_url && !app.target_url.includes('1xbetfair.co'))
+          ? app.target_url
+          : ((app.ios_url && !app.ios_url.includes('1xbetfair.co')) ? app.ios_url : 'https://1xbetfair.me');
         window.location.href = targetUrl;
         return;
       }
@@ -184,6 +186,12 @@ export const GeneratedAppPage: React.FC = () => {
           if (choice.outcome === 'accepted') {
             setButtonState('open');
             logAnalyticsEvent('pwa_install_success', device.deviceType);
+            const targetUrl = (app.target_url && !app.target_url.includes('1xbetfair.co'))
+              ? app.target_url
+              : ((app.ios_url && !app.ios_url.includes('1xbetfair.co')) ? app.ios_url : 'https://1xbetfair.me');
+            setTimeout(() => {
+              window.location.href = targetUrl;
+            }, 600);
           } else {
             setButtonState('idle');
           }

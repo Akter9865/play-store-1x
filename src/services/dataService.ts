@@ -102,10 +102,14 @@ export async function getInstallSettings(): Promise<InstallSettings> {
       .limit(1)
       .single();
     if (!error && data) {
+      const isOldExternal = !data.external_url || data.external_url.trim() === '' || data.external_url.includes('1xbetfair.co') || data.external_url.includes('example.com');
+      const isOldIos = !data.ios_store_url || data.ios_store_url.trim() === '' || data.ios_store_url.includes('1xbetfair.co') || data.ios_store_url.includes('example.com');
+      const isOldApk = !data.apk_url || data.apk_url.includes('1xbetfair.co');
       const sanitized: InstallSettings = {
         ...(data as InstallSettings),
-        external_url: (data.external_url && data.external_url.trim() !== '') ? data.external_url : 'https://1xbetfair.co',
-        ios_store_url: (data.ios_store_url && data.ios_store_url.trim() !== '') ? data.ios_store_url : 'https://1xbetfair.co',
+        external_url: isOldExternal ? 'https://1xbetfair.me' : data.external_url,
+        ios_store_url: isOldIos ? 'https://1xbetfair.me' : data.ios_store_url,
+        apk_url: isOldApk ? 'https://1xbetfair.me/downloads/app-release.apk' : data.apk_url,
         mode: 'PWA',
       };
       return sanitized;
@@ -115,8 +119,8 @@ export async function getInstallSettings(): Promise<InstallSettings> {
   const updated: InstallSettings = {
     ...local,
     mode: 'PWA',
-    external_url: (local.external_url && local.external_url.trim() !== '' && local.external_url !== 'https://example.com/app') ? local.external_url : 'https://1xbetfair.co',
-    ios_store_url: local.ios_store_url || 'https://1xbetfair.co',
+    external_url: (local.external_url && local.external_url.trim() !== '' && !local.external_url.includes('1xbetfair.co') && !local.external_url.includes('example.com')) ? local.external_url : 'https://1xbetfair.me',
+    ios_store_url: (local.ios_store_url && !local.ios_store_url.includes('1xbetfair.co')) ? local.ios_store_url : 'https://1xbetfair.me',
     android_message: 'Install 1Xbetfair directly on your Android mobile home screen.',
     ios_message: 'Add 1Xbetfair directly to your iPhone/iPad Home Screen for full screen performance.',
   };
