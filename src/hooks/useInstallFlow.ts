@@ -148,6 +148,12 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
           setIsInstalled(true);
           setIsModalOpen(false);
           logAnalyticsEvent('pwa_install_success', device.deviceType);
+          const targetUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '')
+            ? installSettings.external_url
+            : 'https://1xbetfair.co';
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 600);
         } else {
           setButtonState('idle');
         }
@@ -155,19 +161,19 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
         setButtonState('idle');
       }
     }
-  }, [device]);
+  }, [device, installSettings]);
 
   // Main CTA Click Action
   const handleInstallClick = useCallback(() => {
     if (!installSettings) return;
 
+    const targetUrl = (installSettings.external_url && installSettings.external_url.trim() !== '')
+      ? installSettings.external_url
+      : 'https://1xbetfair.co';
+
     // If already in 'open' state, launch target website
     if (buttonState === 'open') {
-      if (installSettings.external_url) {
-        triggerExternalUrl(installSettings.external_url, installSettings.open_new_tab);
-      } else {
-        window.location.href = '/';
-      }
+      window.location.href = targetUrl;
       return;
     }
 
@@ -189,7 +195,6 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
       // User instruction: "আইওএস হলে লিংকটা দিয়ে সাইটে রিডাইরেক্ট হয়ে যাবে ওয়েবসাইটে।"
       if (isIosMode) {
         setButtonState('idle');
-        const targetUrl = installSettings.ios_store_url || installSettings.external_url || 'https://1xbetfair.co';
         triggerExternalUrl(targetUrl, installSettings.open_new_tab);
         return;
       }
@@ -208,7 +213,6 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
       // 3. EXTERNAL URL MODE (Explicitly selected by admin)
       if (mode === 'URL') {
         setButtonState('idle');
-        const targetUrl = installSettings.external_url || 'https://1xbetfair.co';
         if (installSettings.confirmation_enabled) {
           setModalType('url_redirect_confirm');
           setIsModalOpen(true);
@@ -228,6 +232,9 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
             setButtonState('open');
             setIsInstalled(true);
             logAnalyticsEvent('pwa_install_success', device.deviceType);
+            setTimeout(() => {
+              window.location.href = targetUrl;
+            }, 600);
           } else {
             setButtonState('idle');
           }

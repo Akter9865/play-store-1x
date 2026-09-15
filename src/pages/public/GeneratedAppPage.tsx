@@ -46,14 +46,14 @@ export const GeneratedAppPage: React.FC = () => {
     return dev.isIOS ? 'ios' : 'android';
   });
   const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
-  
+
   // Display & Navigation States
   const [isStandalone, setIsStandalone] = useState(false);
   const [showInAppViewer, setShowInAppViewer] = useState(false);
   const [buttonState, setButtonState] = useState<'idle' | 'initializing' | 'downloading' | 'open'>('idle');
   const [isIframeBlocked, setIsIframeBlocked] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(true);
-  
+
   // Modals
   const [showIosGuide, setShowIosGuide] = useState(false);
   const [showAndroidGuide, setShowAndroidGuide] = useState(false);

@@ -120,10 +120,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
     );
   }
 
+  const targetAppUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '')
+    ? installSettings.external_url
+    : 'https://1xbetfair.co';
+
   // =========================================================================
   // VIEW MODE: IN-APP TARGET WEBSITE (When launched from PWA Home Screen icon)
   // =========================================================================
-  if (showInAppViewer && installSettings.external_url) {
+  if (showInAppViewer) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white select-none">
         <header className="h-11 bg-slate-900 border-b border-slate-800 px-3 flex items-center justify-between flex-shrink-0">
@@ -163,7 +167,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
             </button>
 
             <a
-              href={installSettings.external_url}
+              href={targetAppUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 text-xs"
@@ -195,7 +199,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
                 The target website requests a dedicated full window session.
               </p>
               <a
-                href={installSettings.external_url}
+                href={targetAppUrl}
                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
               >
                 Launch App Window
@@ -204,7 +208,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
           ) : (
             <iframe
               id="target-app-iframe"
-              src={installSettings.external_url}
+              src={targetAppUrl}
               title={appSettings.app_name}
               className="w-full h-full border-0"
               onLoad={() => setIsIframeLoading(false)}

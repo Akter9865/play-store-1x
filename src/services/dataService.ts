@@ -101,27 +101,27 @@ export async function getInstallSettings(): Promise<InstallSettings> {
       .select('*')
       .limit(1)
       .single();
-    if (!error && data) return data as InstallSettings;
+    if (!error && data) {
+      const sanitized: InstallSettings = {
+        ...(data as InstallSettings),
+        external_url: (data.external_url && data.external_url.trim() !== '') ? data.external_url : 'https://1xbetfair.co',
+        ios_store_url: (data.ios_store_url && data.ios_store_url.trim() !== '') ? data.ios_store_url : 'https://1xbetfair.co',
+        mode: 'PWA',
+      };
+      return sanitized;
+    }
   }
   const local = getLocal<InstallSettings>(STORAGE_KEYS.INSTALL_SETTINGS, initialInstallSettings);
-  if (
-    local.external_url === 'https://example.com/app' ||
-    !local.external_url ||
-    local.ios_store_url === 'https://1xbetfair.co' ||
-    local.mode !== 'PWA'
-  ) {
-    const updated: InstallSettings = {
-      ...local,
-      mode: 'PWA',
-      external_url: 'https://1xbetfair.co',
-      ios_store_url: local.ios_store_url === 'https://1xbetfair.co' ? '' : (local.ios_store_url || ''),
-      android_message: 'Install 1Xbetfair directly on your Android mobile home screen.',
-      ios_message: 'Add 1Xbetfair directly to your iPhone/iPad Home Screen for full screen performance.',
-    };
-    setLocal(STORAGE_KEYS.INSTALL_SETTINGS, updated);
-    return updated;
-  }
-  return local;
+  const updated: InstallSettings = {
+    ...local,
+    mode: 'PWA',
+    external_url: (local.external_url && local.external_url.trim() !== '' && local.external_url !== 'https://example.com/app') ? local.external_url : 'https://1xbetfair.co',
+    ios_store_url: local.ios_store_url || 'https://1xbetfair.co',
+    android_message: 'Install 1Xbetfair directly on your Android mobile home screen.',
+    ios_message: 'Add 1Xbetfair directly to your iPhone/iPad Home Screen for full screen performance.',
+  };
+  setLocal(STORAGE_KEYS.INSTALL_SETTINGS, updated);
+  return updated;
 }
 
 export async function updateInstallSettings(settings: Partial<InstallSettings>): Promise<InstallSettings> {
