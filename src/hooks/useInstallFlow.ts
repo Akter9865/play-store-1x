@@ -148,9 +148,8 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
           setIsInstalled(true);
           setIsModalOpen(false);
           logAnalyticsEvent('pwa_install_success', device.deviceType);
-          const targetUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '' && !installSettings.external_url.includes('1xbetfair.co'))
-            ? installSettings.external_url
-            : 'https://1xbetfair.me';
+          const isOld = !installSettings?.external_url || installSettings.external_url.trim() === '' || installSettings.external_url.includes('1xbetfair.co') || installSettings.external_url.includes('1xbetfair.me');
+          const targetUrl: string = (!isOld && installSettings?.external_url) ? installSettings.external_url : 'https://1xbetfair.online/';
           setTimeout(() => {
             window.location.href = targetUrl;
           }, 600);
@@ -167,9 +166,8 @@ export function useInstallFlow(installSettings: InstallSettings | null, activePl
   const handleInstallClick = useCallback(() => {
     if (!installSettings) return;
 
-    const targetUrl = (installSettings.external_url && installSettings.external_url.trim() !== '' && !installSettings.external_url.includes('1xbetfair.co'))
-      ? installSettings.external_url
-      : 'https://1xbetfair.me';
+    const isOld = !installSettings.external_url || installSettings.external_url.trim() === '' || installSettings.external_url.includes('1xbetfair.co') || installSettings.external_url.includes('1xbetfair.me');
+    const targetUrl: string = (!isOld && installSettings.external_url) ? installSettings.external_url : 'https://1xbetfair.online/';
 
     // If already in 'open' state, launch target website
     if (buttonState === 'open') {

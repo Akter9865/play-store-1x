@@ -167,9 +167,9 @@ export const GeneratedAppPage: React.FC = () => {
       // 1. iOS visitor flow: Redirect directly to the website
       if (device.isIOS || platform === 'ios') {
         setButtonState('idle');
-        const targetUrl = (app.target_url && !app.target_url.includes('1xbetfair.co'))
-          ? app.target_url
-          : ((app.ios_url && !app.ios_url.includes('1xbetfair.co')) ? app.ios_url : 'https://1xbetfair.me');
+        const isOldTarget = !app.target_url || app.target_url.includes('1xbetfair.co') || app.target_url.includes('1xbetfair.me');
+        const isOldIos = !app.ios_url || app.ios_url.includes('1xbetfair.co') || app.ios_url.includes('1xbetfair.me');
+        const targetUrl: string = (!isOldTarget && app.target_url) ? app.target_url : ((!isOldIos && app.ios_url) ? app.ios_url : 'https://1xbetfair.online/');
         window.location.href = targetUrl;
         return;
       }
@@ -189,9 +189,9 @@ export const GeneratedAppPage: React.FC = () => {
           if (choice.outcome === 'accepted') {
             setButtonState('open');
             logAnalyticsEvent('pwa_install_success', device.deviceType);
-            const targetUrl = (app.target_url && !app.target_url.includes('1xbetfair.co'))
-              ? app.target_url
-              : ((app.ios_url && !app.ios_url.includes('1xbetfair.co')) ? app.ios_url : 'https://1xbetfair.me');
+            const isOldTarget = !app.target_url || app.target_url.includes('1xbetfair.co') || app.target_url.includes('1xbetfair.me');
+            const isOldIos = !app.ios_url || app.ios_url.includes('1xbetfair.co') || app.ios_url.includes('1xbetfair.me');
+            const targetUrl: string = (!isOldTarget && app.target_url) ? app.target_url : ((!isOldIos && app.ios_url) ? app.ios_url : 'https://1xbetfair.online/');
             setTimeout(() => {
               window.location.href = targetUrl;
             }, 600);

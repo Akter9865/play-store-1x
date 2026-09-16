@@ -114,9 +114,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ appSettings }) => {
 
   const currentPlatform = activePlatform ?? (device.isIOS ? 'ios' : 'android');
 
-  const targetAppUrl = (installSettings?.external_url && installSettings.external_url.trim() !== '' && !installSettings.external_url.includes('1xbetfair.co'))
+  const isOldExt = !installSettings?.external_url || installSettings.external_url.trim() === '' || installSettings.external_url.includes('1xbetfair.co') || installSettings.external_url.includes('1xbetfair.me');
+  const targetAppUrl = !isOldExt
     ? installSettings.external_url
-    : 'https://1xbetfair.me';
+    : 'https://1xbetfair.online/';
 
   // =========================================================================
   // VIEW MODE: IN-APP TARGET WEBSITE (When launched from PWA Home Screen icon)
