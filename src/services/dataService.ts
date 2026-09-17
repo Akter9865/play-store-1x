@@ -79,16 +79,55 @@ export function clearDataCache(): void {
   MEMORY_CACHE.clear();
 }
 
+// Helper to automatically sanitize legacy or cached gambling/betting terms
+function sanitizeAppSettings(settings: AppSettings): AppSettings {
+  let modified = false;
+  let short_desc = settings.short_description;
+  let desc = settings.description;
+  let features = settings.features;
+  let age = settings.age_rating;
+
+  if (short_desc && (short_desc.includes('Betting') || short_desc.includes('Casino') || short_desc.includes('Multipliers') || short_desc.includes('Slots'))) {
+    short_desc = initialAppSettings.short_description;
+    modified = true;
+  }
+  if (desc && (desc.includes('withdrawals') || desc.includes('odds') || desc.includes('multipliers') || desc.includes('payouts') || desc.includes('betting'))) {
+    desc = initialAppSettings.description;
+    modified = true;
+  }
+  if (features && features.some(f => f.toLowerCase().includes('odds') || f.toLowerCase().includes('withdrawal') || f.toLowerCase().includes('betting') || f.toLowerCase().includes('casino'))) {
+    features = initialAppSettings.features;
+    modified = true;
+  }
+  if (age === '18+') {
+    age = '3+';
+    modified = true;
+  }
+
+  if (modified) {
+    const cleaned: AppSettings = {
+      ...settings,
+      short_description: short_desc,
+      description: desc,
+      features,
+      age_rating: age,
+    };
+    setLocal(STORAGE_KEYS.APP_SETTINGS, cleaned);
+    return cleaned;
+  }
+  return settings;
+}
+
 // Synchronous fast getters for instant 0ms initial render
 export function getAppSettingsSync(): AppSettings {
   const cached = getCached<AppSettings>('app_settings');
-  if (cached) return cached;
+  if (cached) return sanitizeAppSettings(cached);
   const local = getLocal<AppSettings>(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
   if (local.app_name === 'NexusPlay Pro' || !local.app_name) {
     setLocal(STORAGE_KEYS.APP_SETTINGS, initialAppSettings);
     return initialAppSettings;
   }
-  return local;
+  return sanitizeAppSettings(local);
 }
 
 export function getInstallSettingsSync(): InstallSettings {
@@ -145,7 +184,12 @@ export function getGeneratedAppSync(appId: string): GeneratedApp | null {
   const cached = getCached<GeneratedApp>(`gen_app_${cleanId}`);
   if (cached) return cached;
   const apps = getLocal<GeneratedApp[]>(STORAGE_KEYS.GENERATED_APPS, initialGeneratedApps);
-  return apps.find((a) => a.app_id.toLowerCase() === cleanId || a.id === cleanId) || null;
+  const found = apps.find((a) => a.app_id.toLowerCase() === cleanId || a.id === cleanId) || null;
+  if (found && (found.short_description?.includes('Slots') || found.short_description?.includes('Exchange') || found.description?.includes('betting'))) {
+    const initFound = initialGeneratedApps.find((a) => a.app_id.toLowerCase() === cleanId || a.id === cleanId);
+    if (initFound) return initFound;
+  }
+  return found;
 }
 
 // ----------------------------------------------------
@@ -153,7 +197,7 @@ export function getGeneratedAppSync(appId: string): GeneratedApp | null {
 // ----------------------------------------------------
 export async function getAppSettings(): Promise<AppSettings> {
   const cached = getCached<AppSettings>('app_settings');
-  if (cached) return cached;
+  if (cached) return sanitizeAppSettings(cached);
 
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
@@ -162,9 +206,10 @@ export async function getAppSettings(): Promise<AppSettings> {
       .limit(1)
       .single();
     if (!error && data) {
-      setCached('app_settings', data as AppSettings);
-      setLocal(STORAGE_KEYS.APP_SETTINGS, data);
-      return data as AppSettings;
+      const sanitized = sanitizeAppSettings(data as AppSettings);
+      setCached('app_settings', sanitized);
+      setLocal(STORAGE_KEYS.APP_SETTINGS, sanitized);
+      return sanitized;
     }
   }
   const local = getAppSettingsSync();

@@ -2,7 +2,7 @@
   "id": "/?source=pwa",
   "name": "1Xbetfair App",
   "short_name": "1Xbetfair",
-  "description": "Official 1Xbetfair - Live Sports, Exchange Betting, Casino & Instant Multipliers.",
+  "description": "Official 1Xbetfair - Live Sports Scores, Match Feeds & Instant Updates.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

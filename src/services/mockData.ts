@@ -14,30 +14,30 @@ export const initialAppSettings: AppSettings = {
   id: '00000000-0000-0000-0000-000000000001',
   app_name: '1Xbetfair',
   developer_name: '1Xbetfair Official Limited',
-  short_description: 'Live Sports, Exchange Betting, Casino & Instant Multipliers.',
-  description: `Experience the official 1Xbetfair application with instant live sports odds, exchange markets, and fast withdrawals.
+  short_description: 'Live Sports Scores, Match Analysis, Highlights & Instant Feeds.',
+  description: `Experience the official 1Xbetfair application with instant live sports scores, match analytics, and high-speed updates.
 
-Built with an ultra-responsive interface, 1Xbetfair gives you real-time access to live match feeds, higher multipliers, instant verification, and 24/7 dedicated customer assistance.
+Built with an ultra-responsive interface, 1Xbetfair gives you real-time access to live match feeds, player performance stats, instant sync, and 24/7 dedicated assistance.
 
 Key Features & Highlights:
 • Instant App Launch: Optimized cold-starts with zero stutter or lag.
-• Live Sports & Exchange: Real-time dynamic odds and high-speed in-play updates.
-• Secure Fast Withdrawals: Quick, verified payouts directly to your account.
+• Live Sports & Match Tracker: Real-time dynamic game stats and high-speed in-play scores.
+• Fast Data Synchronization: Quick, verified cloud updates directly on your device.
 • Bank-Grade Data Privacy: Encrypted SSL data channels with high-grade security.
 • Universal Compatibility: Smoothly runs as standalone PWA on Android, iOS Safari, and Desktop.
 • Regular Updates: Continuously updated for stability, security, and peak performance.`,
   features: [
-    'Real-time live sports odds and exchange markets',
-    'Instant, secure withdrawal verification',
+    'Real-time live sports scores and match analytics',
+    'Instant cloud sync and high-speed data updates',
     'Bank-grade SSL data encryption and privacy',
     'Fluid PWA standalone performance across all devices',
-    '24/7 live dedicated customer support',
+    '24/7 dedicated customer support',
   ],
   category: 'Sports & Entertainment',
   rating: 4.9,
   review_count: '18.4K reviews',
   download_count: '500K+ downloads',
-  age_rating: '18+',
+  age_rating: '3+',
   version: '3.1.0',
   last_updated: 'Today',
   icon_url: '/1xbetfair-icon.png',
@@ -307,8 +307,8 @@ export const initialGeneratedApps: GeneratedApp[] = [
     review_count: '18.4K reviews',
     download_count: '500K+ downloads',
     version: '3.1.0',
-    short_description: 'Official 1Xbetfair - Sports, Live Exchange, Slots & Instant Verification.',
-    description: '1Xbetfair delivers premier live sports betting, exchange markets, top multiplier games, and instant withdrawals. Enjoy fast, secure mobile gaming on any device.',
+    short_description: 'Official 1Xbetfair - Sports, Live Match Tracker & Instant Updates.',
+    description: '1Xbetfair delivers premier live sports scores, match analysis, and instant sync. Enjoy fast, secure mobile experience on any device.',
     display_mode: 'standalone',
     embed_mode: 'iframe_seamless',
     button_text: 'Install',
@@ -320,8 +320,8 @@ export const initialGeneratedApps: GeneratedApp[] = [
   {
     id: '00000000-0000-0000-0000-000000000101',
     app_id: 'crore-bet',
-    app_name: 'Crore Bet',
-    short_name: 'Crore Bet',
+    app_name: 'Crore Games',
+    short_name: 'Crore Games',
     target_url: 'https://crore-games.com/?__hbus=10',
     icon_url: '/icon-512.png',
     icon_192_url: '/icon-192.png',
@@ -330,13 +330,13 @@ export const initialGeneratedApps: GeneratedApp[] = [
     favicon_url: '/favicon.png',
     theme_color: '#01875f',
     background_color: '#000000',
-    category: 'Casino & Entertainment',
+    category: 'Games & Entertainment',
     rating: 4.7,
     review_count: '8.3L reviews',
     download_count: '10L+ downloads',
     version: '1.4.0',
-    short_description: 'Slots, live games, higher multipliers and instant verification.',
-    description: 'Crore Bet delivers top slots, live games, and instant withdrawal verification. Enjoy seamless mobile gaming.',
+    short_description: 'Live interactive games, puzzles and instant cloud sync.',
+    description: 'Crore Games delivers top mobile games, live interactive challenges, and seamless performance.',
     display_mode: 'standalone',
     embed_mode: 'iframe_seamless',
     button_text: 'Install',
